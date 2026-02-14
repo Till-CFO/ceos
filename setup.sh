@@ -293,6 +293,7 @@ init() {
     mkdir -p "$CEOS_ROOT/data/issues/solved"
     mkdir -p "$CEOS_ROOT/data/meetings/l10"
     mkdir -p "$CEOS_ROOT/data/processes"
+    mkdir -p "$CEOS_ROOT/data/people"
 
     # ── Copy and substitute templates ──
 
