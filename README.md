@@ -95,6 +95,30 @@ CEOS is built for multi-person leadership teams:
 3. **Commit data** to your fork — git is the collaboration layer
 4. **Pull upstream** for skill updates — your data stays untouched
 
+## Security
+
+CEOS skills are **instructions that Claude Code follows with your permissions** — including reading files, writing files, and running commands. This is powerful, but it means you should treat skill files like code: review before you run.
+
+### If you fork or clone from upstream (`bradfeld/ceos`)
+
+The official skills are maintained and reviewed by the project maintainers. Pulling upstream updates is safe as long as you verify the remote:
+
+```bash
+git remote get-url origin   # Should point to bradfeld/ceos or your company's fork
+```
+
+### If you install skills from other sources
+
+Before running `./setup.sh` on a repo you didn't write:
+
+1. **Read every `SKILL.md` file.** They're plain markdown — you can understand what they do.
+2. **Watch for red flags:** instructions that access files outside `data/` or `templates/`, references to external URLs or APIs, requests for credentials or API keys, or shell commands beyond basic git operations.
+3. **Check the git history.** `git log --oneline skills/` shows what changed and when.
+
+### For contributors
+
+If you're submitting a skill via pull request, see the [Skill Security Review](CONTRIBUTING.md#skill-security-review) section in CONTRIBUTING.md for what reviewers look for.
+
 ## Requirements
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed

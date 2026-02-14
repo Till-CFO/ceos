@@ -34,6 +34,19 @@
 - [ ] Verified data files parse correctly
 - [ ] Other (describe below)
 
+## Security Review (for skill changes)
+
+<!-- If your PR modifies any skill file (skills/ceos-*/SKILL.md), complete this checklist. -->
+<!-- Skip this section for docs-only or template-only changes. -->
+
+- [ ] Skill only accesses files within `data/` and `templates/`
+- [ ] No external URLs, API calls, or network requests
+- [ ] No credential handling (API keys, passwords, tokens)
+- [ ] No shell command instructions (uses Claude's built-in file tools only)
+- [ ] Shows content to user before writing any file (diff before write)
+
+<!-- See CONTRIBUTING.md "Skill Security Review" for details on what reviewers look for. -->
+
 ## Breaking Changes
 
 <!-- Does this change how existing users' data or workflows behave? -->

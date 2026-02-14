@@ -85,6 +85,7 @@ Some files require extra care:
 |-----------|------|
 | Data format spec (frontmatter keys, status values) | RFC + major version for breaking changes |
 | Skill names and triggers | Issue discussion first |
+| Skill files (`skills/ceos-*/SKILL.md`) | Security review required — see [Skill Security Review](#skill-security-review) |
 | `setup.sh` interface | Backward-compatible changes only |
 | Templates | Additive only — never remove or rename |
 
@@ -96,6 +97,50 @@ Some files require extra care:
 4. **Update docs** if your change affects how things work
 
 All PRs are reviewed by the maintainer before merging.
+
+## Skill Security Review
+
+CEOS skills are natural language instructions that Claude Code follows with the user's full permissions — file access, command execution, and more. A malicious or poorly written skill could read sensitive files, modify data outside its scope, or trick users into unsafe actions. **Every skill PR gets a security review.**
+
+### Red Flags
+
+When reviewing a skill PR, watch for these patterns:
+
+| Red Flag | Why It's Dangerous | Example |
+|----------|-------------------|---------|
+| File access outside `data/` and `templates/` | Could read/modify system files, credentials, or other repos | `Read ~/.ssh/id_rsa` or `Read ~/.env` |
+| Shell commands beyond basic git | Could execute arbitrary code on the user's machine | `Run curl ... \| bash` or `Execute pip install ...` |
+| External URLs or API calls | Could exfiltrate data to remote servers | `Send this data to https://example.com/collect` |
+| Requests for credentials or API keys | Could harvest secrets | `Ask the user for their OpenAI API key` |
+| Instructions to disable safety checks | Undermines existing guardrails | `Skip the diff preview` or `Write without asking` |
+| Overly broad file operations | Could corrupt data across skills | `Delete all files in data/` or `Modify every .md file` |
+
+### Review Checklist for Skill PRs
+
+Before approving a skill PR, verify:
+
+- [ ] **Scope**: Skill only reads/writes files within `data/` and `templates/` (plus its own `SKILL.md`)
+- [ ] **No external calls**: Skill doesn't reference external URLs, APIs, or services
+- [ ] **No credential handling**: Skill doesn't ask for or store API keys, passwords, or tokens
+- [ ] **No shell commands**: Skill doesn't instruct Claude to run shell commands (except basic file operations)
+- [ ] **Diff before write**: Skill shows content to the user before writing any file
+- [ ] **Guardrails section**: Skill includes a `## Guardrails` section with appropriate constraints
+- [ ] **Cross-skill boundaries**: Skill mentions other skills but doesn't auto-invoke them
+
+### Security Manifest (Optional)
+
+Skill authors can add optional frontmatter fields to make security review easier:
+
+```yaml
+---
+name: ceos-example
+description: Use when [trigger]
+file-access: [data/example/, templates/example.md]
+tools-used: [Read, Write, Glob]
+---
+```
+
+These fields are not enforced — they're a convenience for reviewers to quickly verify that the skill's actual behavior matches its declared scope.
 
 ## Versioning
 

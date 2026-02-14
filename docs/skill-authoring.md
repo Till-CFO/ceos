@@ -191,6 +191,82 @@ CEOS skills are **loosely coupled**. A skill can mention another skill but shoul
 
 Why? The user controls the workflow. During an L10 meeting, the facilitator decides when to switch from Scorecard Review to IDS. Skills should suggest, not command.
 
+## Security & Scope Boundaries
+
+CEOS skills run inside Claude Code with the user's full permissions. A skill can read files, write files, and execute commands. This power requires discipline — skills should do the minimum necessary and stay within well-defined boundaries.
+
+### Scope Rules
+
+Every CEOS skill should follow these scope rules:
+
+| Rule | Why |
+|------|-----|
+| **Only access `data/` and `templates/`** | Company EOS data lives here — nothing else should be touched |
+| **Never reference external URLs or APIs** | Skills should work offline; external calls could exfiltrate data |
+| **Never handle credentials** | No asking for API keys, passwords, or tokens |
+| **Never instruct shell commands** | File operations go through Claude's built-in tools, not `bash` |
+| **Always show before writing** | The user must approve every file change (the "diff before write" rule) |
+| **Stay in the CEOS repo** | The `.ceos` marker detection ensures skills don't operate outside the repo |
+
+### Security Manifest (Optional Frontmatter)
+
+You can add optional fields to your skill's YAML frontmatter to declare its scope explicitly. These help reviewers audit your skill quickly:
+
+```yaml
+---
+name: ceos-example
+description: Use when [trigger condition]
+file-access: [data/example/, templates/example.md]
+tools-used: [Read, Write, Glob]
+---
+```
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| `file-access` | Directories and files the skill reads or writes | `[data/rocks/, data/vision.md, templates/rock.md]` |
+| `tools-used` | Claude Code tools the skill relies on | `[Read, Write, Glob, Grep]` |
+
+These fields are **not enforced at runtime** — they're a declaration of intent that makes code review faster. Reviewers compare what the manifest says against what the skill body actually does.
+
+### What NOT to Put in a Skill
+
+| Don't Do This | Why | What to Do Instead |
+|---------------|-----|-------------------|
+| `Read ~/.ssh/id_rsa` | Accesses files outside CEOS repo | Only read from `data/` and `templates/` |
+| `Run curl https://api.example.com/...` | External network call | Skills should work offline |
+| `Ask the user for their API key` | Credential harvesting risk | Skills don't need external service credentials |
+| `Write to /tmp/export.csv` | Writes outside CEOS repo | Write to `data/` directory |
+| `Delete all files in data/rocks/` | Destructive bulk operation | Modify individual files with user confirmation |
+| `Automatically invoke ceos-ids` | Breaks user control principle | Suggest the skill; let user invoke it |
+
+### Well-Scoped vs Suspicious: Examples
+
+**Well-scoped skill manifest:**
+
+```yaml
+---
+name: ceos-rocks
+description: Use when setting, tracking, or scoring quarterly Rocks
+file-access: [data/rocks/, templates/rock.md]
+tools-used: [Read, Write, Glob]
+---
+```
+
+This skill reads Rock files, creates new ones from a template, and lists directory contents. All within `data/` and `templates/`. Straightforward to review.
+
+**Suspicious skill manifest:**
+
+```yaml
+---
+name: ceos-export
+description: Use when exporting EOS data
+file-access: [data/, ~/.config/export/]
+tools-used: [Read, Write, Bash, WebFetch]
+---
+```
+
+Red flags: accesses files outside the repo (`~/.config/`), uses `Bash` (shell commands), and uses `WebFetch` (external network access). A reviewer should ask: why does an export skill need network access and shell commands?
+
 ## Testing Your Skill
 
 CEOS skills are tested manually with Claude Code:
