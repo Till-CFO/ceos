@@ -295,6 +295,7 @@ init() {
     mkdir -p "$CEOS_ROOT/data/processes"
     mkdir -p "$CEOS_ROOT/data/people"
     mkdir -p "$CEOS_ROOT/data/conversations"
+    mkdir -p "$CEOS_ROOT/data/annual"
 
     # ── Copy and substitute templates ──
 

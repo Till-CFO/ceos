@@ -1,6 +1,6 @@
 # CEOS
 
-**Run EOS with AI.** CEOS brings the [Entrepreneurial Operating System](https://www.eosworldwide.com/) to [Claude Code](https://docs.anthropic.com/en/docs/claude-code), giving your leadership team eight AI-powered skills for Vision, Rocks, Scorecard, L10 Meetings, IDS, Process, People Analyzer, and Quarterly Conversations.
+**Run EOS with AI.** CEOS brings the [Entrepreneurial Operating System](https://www.eosworldwide.com/) to [Claude Code](https://docs.anthropic.com/en/docs/claude-code), giving your leadership team nine AI-powered skills for Vision, Rocks, Scorecard, L10 Meetings, IDS, Process, People Analyzer, Quarterly Conversations, and Annual Planning.
 
 Clone. Setup. Run your business.
 
@@ -25,7 +25,7 @@ claude
 > "Let's set our quarterly rocks"
 ```
 
-## The 8 Skills
+## The 9 Skills
 
 | Skill | What It Does | Try Saying... |
 |-------|-------------|---------------|
@@ -37,12 +37,13 @@ claude
 | **ceos-process** | Core Processes — document, simplify, and track followability | "Document our sales process" or "Audit process FBA scores" |
 | **ceos-people** | People Analyzer — right people, right seats (Core Values + GWC) | "Evaluate Brad" or "Quarterly people review" |
 | **ceos-quarterly** | Quarterly Conversations — formal manager/direct report check-ins | "Run quarterly conversation for Brad" or "Schedule quarterly conversations" |
+| **ceos-annual** | Annual Planning — year-end V/TO refresh and Rock setting | "Plan next year" or "Review 2025" or "Refresh our vision" |
 
 ## How It Works
 
 ```
 ┌─────────────────────────────────┐
-│  skills/ceos-*/SKILL.md         │  ← Claude Code skills (8 EOS tools)
+│  skills/ceos-*/SKILL.md         │  ← Claude Code skills (9 EOS tools)
 ├─────────────────────────────────┤
 │  data/ + templates/             │  ← Your EOS data (markdown files)
 │  (markdown + YAML frontmatter)  │     Human-readable, git-tracked
