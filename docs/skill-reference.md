@@ -1023,6 +1023,84 @@ Claude reads data/accountability.md for seat responsibilities, then walks throug
 
 ---
 
+## ceos-clarity
+
+**Clarity Break — structured leadership reflection**
+
+One of the Five Leadership Abilities in EOS. A Clarity Break is scheduled time to step away from day-to-day work and think strategically: "work ON the business, not IN it." Unlike structured EOS tools, the Clarity Break is intentionally unstructured — this skill provides just enough framework to make it habitual without over-formalizing it.
+
+### Modes
+
+| Mode | What It Does |
+|------|-------------|
+| **Start** | Guide a live Clarity Break — gather business context, prompt reflection, capture insights |
+| **Log** | Record a Clarity Break that already happened (retroactive logging) |
+| **History** | Review past Clarity Break notes and identify recurring themes |
+
+### Example
+
+**Start mode:**
+
+```
+State of the Business
+━━━━━━━━━━━━━━━━━━━━━
+
+1-Year Plan: Launch 3 apps, $1M ARR
+Rocks: 4/6 on track (Q1 2026)
+  Off track: Hire VP Sales, Partner Program
+Scorecard: Revenue on track, NPS off track 3 weeks running
+Open Issues: 8 total — top 3: Sales pipeline, Onboarding flow, API stability
+
+Reflection
+━━━━━━━━━━
+
+What's working well?
+> Product-market fit is strong. Customer retention is above target...
+
+What's not working?
+> Sales pipeline is too dependent on one channel...
+
+What's missing?
+> We don't have a formal onboarding process for new hires...
+
+What needs to change?
+> We need to hire a dedicated sales lead before Q2...
+
+Themes: hiring, sales-pipeline, onboarding
+Issues identified: "Sales pipeline depends on single channel"
+```
+
+**History mode:**
+
+```
+Clarity Break History
+━━━━━━━━━━━━━━━━━━━━━
+
+2026-02-14  brad  (45 min)  Themes: hiring, product-market-fit
+2026-02-07  brad  (30 min)  Themes: sales-pipeline, hiring
+2026-01-31  brad  (60 min)  Themes: product-market-fit, team-culture
+
+Total: 3 Clarity Breaks
+
+Recurring Themes (2+ appearances)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  hiring: 2 times (Feb 14, Feb 7)
+  product-market-fit: 2 times (Feb 14, Jan 31)
+```
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `data/clarity/` | Clarity Break notes (one file per session, YYYY-MM-DD.md) |
+| `data/vision.md` | V/TO for strategic context (read-only) |
+| `data/rocks/` | Current Rocks for progress context (read-only) |
+| `data/scorecard/weeks/` | Recent scorecard data for trend context (read-only) |
+| `data/issues/open/` | Open issues for awareness context (read-only) |
+| `templates/clarity-break.md` | Template for new Clarity Break files |
+
+---
+
 ## Cross-Skill Workflows
 
 The skills are designed to work together through the natural EOS cadence. Here are common multi-skill workflows:

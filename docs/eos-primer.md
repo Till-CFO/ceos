@@ -23,7 +23,7 @@ EOS organizes everything into 6 key components. CEOS implements tools for all of
 | **Data** | Run the business on facts, not feelings. Track weekly numbers. | `ceos-scorecard`, `ceos-checkup` |
 | **Issues** | Surface problems. Solve them systematically. | `ceos-ids` |
 | **Process** | Document your core processes so they're consistent. | `ceos-process` |
-| **Traction** | Execute on priorities. Rocks + meetings = accountability. | `ceos-rocks`, `ceos-l10`, `ceos-quarterly-planning`, `ceos-todos` |
+| **Traction** | Execute on priorities. Rocks + meetings = accountability. | `ceos-rocks`, `ceos-l10`, `ceos-quarterly-planning`, `ceos-todos`, `ceos-clarity` |
 
 ## EOS Terminology
 

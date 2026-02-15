@@ -22,6 +22,7 @@ ceos/
 │   ├── quarterly/         # Quarterly planning session records
 │   ├── checkups/          # Organizational Checkup assessments
 │   ├── delegate/          # Delegate and Elevate audits
+│   ├── clarity/           # Clarity Break reflections
 │   └── todos/             # To-Do tracking
 ├── templates/             # Templates for new data files
 ├── docs/                  # Documentation (eos-primer.md)
@@ -121,6 +122,7 @@ Each skill owns exactly one data directory. Other skills may read from it but MU
 | ceos-quarterly-planning | `data/quarterly/` | `data/rocks/`, `data/scorecard/`, `data/vision.md`, `data/issues/` |
 | ceos-checkup | `data/checkups/` | `data/vision.md`, `data/accountability.md`, `data/rocks/`, `data/scorecard/`, `data/people/`, `data/issues/` |
 | ceos-delegate | `data/delegate/` | `data/accountability.md`, `data/people/` |
+| ceos-clarity | `data/clarity/` | `data/vision.md`, `data/rocks/`, `data/scorecard/`, `data/issues/open/` |
 
 **Orchestrator skills** (`ceos-l10`, `ceos-annual`, `ceos-quarterly-planning`) read broadly but write only to their own data directory. They reference data from other skills during sessions and suggest follow-up actions via those skills.
 
