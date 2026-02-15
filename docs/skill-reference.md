@@ -1101,6 +1101,82 @@ Recurring Themes (2+ appearances)
 
 ---
 
+## ceos-kickoff — EOS Implementation Kickoff
+
+Facilitate the EOS implementation kickoff sequence — Focus Day, Vision Building Day 1, and Vision Building Day 2. These are the foundational sessions where a leadership team first implements EOS.
+
+### When to Use
+
+- "Focus Day" or "run our Focus Day"
+- "Vision Building Day" or "VB Day 1" or "VB Day 2"
+- "Start EOS" or "implement EOS" or "kick off EOS"
+- "First EOS session" or "EOS implementation"
+
+### Key Operations
+
+| Mode | What Happens |
+|------|-------------|
+| **Focus Day** | Introduces EOS tools, drafts V/TO, creates initial Accountability Chart, brainstorms Rocks, previews L10 format |
+| **Vision Building Day 1** | Deep dive into Core Values, Core Focus, 10-Year Target, and Marketing Strategy |
+| **Vision Building Day 2** | Completes V/TO with 3-Year Picture, 1-Year Plan, sets formal Rocks, brainstorms Issues List |
+
+### Kickoff Sequence
+
+```
+Focus Day          →  VB Day 1         →  VB Day 2         →  Regular EOS Rhythm
+(Introduce EOS)       (~30 days later)    (~30 days later)    (L10s, Quarterly, Annual)
+```
+
+### Example: Focus Day
+
+```
+You: "Let's run our Focus Day"
+Claude: Asks for date and attendees
+        → Walks through 7 agenda sections:
+           1. Welcome & EOS Overview
+           2. V/TO Introduction (first pass)
+           3. Accountability Chart Draft
+           4. Initial Rocks Brainstorm
+           5. Scorecard Discussion
+           6. L10 Preview
+           7. Conclude
+        → Shows complete file for approval
+        → Saves to data/meetings/kickoff/focus-day-2026-02-14.md
+        → Suggests: "Use ceos-accountability to formalize the chart"
+```
+
+### Example: Vision Building Day 2
+
+```
+You: "Let's do VB Day 2"
+Claude: Reads prior Focus Day and VB Day 1 files for context
+        → Walks through 5 agenda sections:
+           1. 3-Year Picture
+           2. 1-Year Plan
+           3. Quarterly Rocks Setting
+           4. Issues List Brainstorm
+           5. Conclude
+        → V/TO completion checklist (all 8 sections)
+        → Saves to data/meetings/kickoff/vb-day-2-2026-02-14.md
+        → Suggests: ceos-vto, ceos-rocks, ceos-ids, ceos-scorecard, ceos-accountability
+```
+
+### Files Used
+
+| Path | Purpose |
+|------|---------|
+| `data/meetings/kickoff/` | Saved kickoff session files (focus-day-*.md, vb-day-1-*.md, vb-day-2-*.md) |
+| `data/vision.md` | V/TO for context checking (read-only) |
+| `data/accountability.md` | Accountability Chart for context (read-only) |
+| `data/rocks/` | Existing Rocks for context (read-only) |
+| `data/scorecard/` | Existing scorecard for context (read-only) |
+| `data/issues/open/` | Existing issues for context (read-only) |
+| `templates/focus-day.md` | Focus Day session template |
+| `templates/vb-day-1.md` | Vision Building Day 1 template |
+| `templates/vb-day-2.md` | Vision Building Day 2 template |
+
+---
+
 ## Cross-Skill Workflows
 
 The skills are designed to work together through the natural EOS cadence. Here are common multi-skill workflows:

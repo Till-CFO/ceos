@@ -1,6 +1,6 @@
 # CEOS
 
-**Run EOS with AI.** CEOS brings the [Entrepreneurial Operating System](https://www.eosworldwide.com/) to [Claude Code](https://docs.anthropic.com/en/docs/claude-code), giving your leadership team 15 AI-powered skills for Vision, Accountability Chart, Rocks, Scorecard, L10 Meetings, IDS, To-Dos, Process, People Analyzer, Quarterly Conversations, Annual Planning, Quarterly Planning, Organizational Checkup, Delegate and Elevate, and Clarity Break.
+**Run EOS with AI.** CEOS brings the [Entrepreneurial Operating System](https://www.eosworldwide.com/) to [Claude Code](https://docs.anthropic.com/en/docs/claude-code), giving your leadership team 16 AI-powered skills for Vision, Accountability Chart, Rocks, Scorecard, L10 Meetings, IDS, To-Dos, Process, People Analyzer, Quarterly Conversations, Annual Planning, Quarterly Planning, Organizational Checkup, Delegate and Elevate, Clarity Break, and EOS Kickoff.
 
 Clone. Setup. Run your business.
 
@@ -8,7 +8,7 @@ Clone. Setup. Run your business.
 
 CEOS (Claude + EOS) is a Claude Code skills package that implements the core EOS tools as AI-assisted workflows. Your EOS data lives as markdown files in your repo — human-readable, GitHub-renderable, and git-diffable. No database, no SaaS subscription, no vendor lock-in.
 
-**Designed for CEOs and leadership teams**, not developers. If you can run `git clone` and `./setup.sh`, you're ready.
+**Designed for CEOs and leadership teams**, not developers. If you can run `git clone` and `./setup.sh`, you're ready. Start with Focus Day, build your V/TO in Vision Building Days, then run EOS with the full skill set.
 
 ## Quick Start
 
@@ -25,7 +25,7 @@ claude
 > "Let's set our quarterly rocks"
 ```
 
-## The 15 Skills
+## The 16 Skills
 
 | Skill | What It Does | Try Saying... |
 |-------|-------------|---------------|
@@ -44,12 +44,13 @@ claude
 | **ceos-checkup** | Organizational Checkup — 20-question health assessment across Six Key Components | "Run an organizational checkup" or "How healthy is our organization?" |
 | **ceos-delegate** | Delegate and Elevate — 4-quadrant task audit for leadership focus | "Run delegate and elevate for Brad" or "What should I be delegating?" |
 | **ceos-clarity** | Clarity Break — scheduled strategic thinking time away from day-to-day | "Take a clarity break" or "Show clarity break history" |
+| **ceos-kickoff** | EOS Kickoff — Focus Day, Vision Building Day 1, Vision Building Day 2 | "Run our Focus Day" or "Start EOS implementation" |
 
 ## How It Works
 
 ```
 ┌─────────────────────────────────┐
-│  skills/ceos-*/SKILL.md         │  ← Claude Code skills (15 EOS tools)
+│  skills/ceos-*/SKILL.md         │  ← Claude Code skills (16 EOS tools)
 ├─────────────────────────────────┤
 │  data/ + templates/             │  ← Your EOS data (markdown files)
 │  (markdown + YAML frontmatter)  │     Human-readable, git-tracked

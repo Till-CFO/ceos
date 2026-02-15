@@ -14,7 +14,9 @@ ceos/
 │   ├── rocks/             # Quarterly Rocks by quarter
 │   ├── scorecard/         # Weekly scorecard metrics and entries
 │   ├── issues/            # IDS issues (open/ and resolved/)
-│   ├── meetings/          # L10 meeting notes
+│   ├── meetings/          # Meeting notes (L10 + kickoff sessions)
+│   │   ├── l10/           # Weekly L10 meeting notes
+│   │   └── kickoff/       # Focus Day + Vision Building Day sessions
 │   ├── processes/         # Core process documentation
 │   ├── people/            # People Analyzer evaluations
 │   ├── conversations/     # Quarterly conversation records
@@ -122,9 +124,10 @@ Each skill owns exactly one data directory. Other skills may read from it but MU
 | ceos-quarterly-planning | `data/quarterly/` | `data/rocks/`, `data/scorecard/`, `data/vision.md`, `data/issues/` |
 | ceos-checkup | `data/checkups/` | `data/vision.md`, `data/accountability.md`, `data/rocks/`, `data/scorecard/`, `data/people/`, `data/issues/` |
 | ceos-delegate | `data/delegate/` | `data/accountability.md`, `data/people/` |
+| ceos-kickoff | `data/meetings/kickoff/` | `data/vision.md`, `data/rocks/`, `data/scorecard/`, `data/issues/`, `data/accountability.md` |
 | ceos-clarity | `data/clarity/` | `data/vision.md`, `data/rocks/`, `data/scorecard/`, `data/issues/open/` |
 
-**Orchestrator skills** (`ceos-l10`, `ceos-annual`, `ceos-quarterly-planning`) read broadly but write only to their own data directory. They reference data from other skills during sessions and suggest follow-up actions via those skills.
+**Orchestrator skills** (`ceos-l10`, `ceos-annual`, `ceos-quarterly-planning`, `ceos-kickoff`) read broadly but write only to their own data directory. They reference data from other skills during sessions and suggest follow-up actions via those skills.
 
 **Assessment skills** (`ceos-checkup`) read broadly for context but write only to their own data directory. They synthesize data from all Six Key Components to produce health assessments.
 
