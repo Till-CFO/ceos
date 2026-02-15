@@ -31,6 +31,29 @@ ceos/
 └── setup.sh               # Repository initialization
 ```
 
+## Workflow Profile
+
+```yaml
+workflow:
+  base_branch: main
+  direct_to_main: true               # No feature branches — commit directly to main
+  investigation: light               # Quick search, no Explore agent
+  plan_approval: auto                # Auto-approve plans (skills repo)
+  user_testing: skip                 # No manual testing needed
+  quality_gates: []                  # No automated tests
+  review:
+    triage: false                    # No review agents
+    max_level: NONE
+    agents: []
+  ship:
+    method: direct_push
+    target: main
+    linear_status: "Done"            # Commit completes the ticket
+    deploy_hint: "git push"
+  labels:
+    auto_detect: false
+```
+
 ## Workflow
 
 - **Commits directly to `main`** — no feature branches
