@@ -1,7 +1,7 @@
 ---
 id: issue-001
 title: "[Issue Title]"
-priority: 1
+priority: 1              # 1 (highest) - 5 (lowest)
 category: process
 ids_stage: identified
 created: "{{date}}"

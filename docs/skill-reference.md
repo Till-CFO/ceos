@@ -311,20 +311,21 @@ Run the IDS (Identify, Discuss, Solve) process — the EOS method for resolving 
 Display all open issues sorted by priority:
 
 ```
-Open Issues (5 total):
+Open Issues (6 total):
 ━━━━━━━━━━━━━━━━━━━━
 P1  issue-003  Slow customer onboarding     [process]  identified
 P1  issue-007  Key account churning          [people]   discussed
 P2  issue-001  Reporting gaps in dashboard   [data]     identified
-P2  issue-005  Misaligned marketing spend    [vision]   identified
-P3  issue-002  Office Wi-Fi unreliable       [process]  identified
+P3  issue-005  Misaligned marketing spend    [vision]   identified
+P4  issue-002  Office Wi-Fi unreliable       [process]  identified
+P5  issue-008  Update team photo on website  [process]  identified
 ```
 
 #### Create Issue (Identify)
 
 1. Name the issue
 2. Dig for root cause using the 5 Whys technique
-3. Classify: priority (1-3) and category
+3. Classify: priority (1-5) and category
 4. Generate unique ID
 5. Write to `data/issues/open/`
 
@@ -341,8 +342,10 @@ Create at least one To-Do with an owner and due date. Move the issue to `data/is
 | Priority | Meaning |
 |----------|---------|
 | 1 | Critical — solve first |
-| 2 | Important — solve soon |
-| 3 | Minor — solve when time allows |
+| 2 | High — solve soon |
+| 3 | Medium — solve when time allows |
+| 4 | Low — solve if capacity allows |
+| 5 | Nice-to-have — backlog |
 
 ### Issue Categories (The 5 EOS Issue Types)
 

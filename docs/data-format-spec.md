@@ -149,7 +149,7 @@ Beta program launched with 10+ users actively providing feedback.
 |-------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier (e.g., `issue-001`) |
 | `title` | string | Yes | Short description of the issue |
-| `priority` | integer | Yes | 1 (critical), 2 (important), 3 (minor) |
+| `priority` | integer | Yes | 1 (critical) to 5 (nice-to-have) |
 | `category` | enum | Yes | EOS issue category (see below) |
 | `ids_stage` | enum | Yes | Current IDS stage (see below) |
 | `created` | date | Yes | Date the issue was identified |
@@ -159,8 +159,10 @@ Beta program launched with 10+ users actively providing feedback.
 | Value | Meaning |
 |-------|---------|
 | `1` | Critical — solve first |
-| `2` | Important — solve soon |
-| `3` | Minor — solve when time allows |
+| `2` | High — solve soon |
+| `3` | Medium — solve when time allows |
+| `4` | Low — solve if capacity allows |
+| `5` | Nice-to-have — backlog |
 
 ### Category Values (The 5 EOS Issue Types)
 

@@ -44,7 +44,7 @@ Each issue is a markdown file with YAML frontmatter:
 ```yaml
 id: issue-001
 title: "Slow customer onboarding"
-priority: 1            # 1 (highest) - 3 (lowest)
+priority: 1            # 1 (highest) - 5 (lowest)
 category: process      # people | process | data | vision | traction
 ids_stage: identified  # identified | discussed | solved
 created: "2026-02-06"
@@ -52,8 +52,10 @@ created: "2026-02-06"
 
 **Priority levels:**
 - `1` — Critical, solve first
-- `2` — Important, solve soon
-- `3` — Minor, solve when time allows
+- `2` — High, solve soon
+- `3` — Medium, solve when time allows
+- `4` — Low, solve if capacity allows
+- `5` — Nice-to-have, backlog
 
 **Categories (the 5 EOS issue types):**
 - `people` — right person, right seat issues
@@ -80,13 +82,14 @@ When the user asks to see the issues list.
 3. Display sorted by priority (1 first):
 
 ```
-Open Issues (5 total):
+Open Issues (6 total):
 ━━━━━━━━━━━━━━━━━━━━
 P1  issue-003  Slow customer onboarding     [process]  identified
 P1  issue-007  Key account churning          [people]   discussed
 P2  issue-001  Reporting gaps in dashboard   [data]     identified
-P2  issue-005  Misaligned marketing spend    [vision]   identified
-P3  issue-002  Office Wi-Fi unreliable       [process]  identified
+P3  issue-005  Misaligned marketing spend    [vision]   identified
+P4  issue-002  Office Wi-Fi unreliable       [process]  identified
+P5  issue-008  Update team photo on website  [process]  identified
 ```
 
 If no open issues exist: "No open issues. Nice work! Use 'ceos-ids' to create one when a new issue surfaces."
@@ -115,7 +118,7 @@ Record both the stated problem and the root cause.
 
 #### Step 3: Classify
 
-1. **Priority** — How urgent? (1/2/3)
+1. **Priority** — How urgent? (1/2/3/4/5)
 2. **Category** — Which EOS type? (people/process/data/vision/traction)
 
 If the user isn't sure about category, help with examples:
