@@ -1,6 +1,8 @@
 ---
 name: ceos-scorecard
 description: Use when defining metrics, logging weekly scorecard numbers, or analyzing trends
+file-access: [data/scorecard/, templates/scorecard-metrics.md, templates/scorecard-week.md]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-scorecard
@@ -177,3 +179,24 @@ If any metric has been off-track 3+ consecutive weeks:
 - **Respect metric definitions.** When logging weekly values, use the thresholds from metrics.md for status calculation. Don't let the user override on_track/off_track manually.
 - **Escalation, not alarm.** Trend flags are suggestions, not commands. Present data objectively and recommend action, but let the user decide.
 - **Cross-reference during L10.** When invoked during an L10 meeting (via `ceos-l10`), focus on the latest week's status. Save trend analysis for dedicated review sessions.
+- **Don't auto-invoke other skills.** Mention `ceos-l10`, `ceos-ids`, and `ceos-annual` when relevant, but let the user decide when to switch workflows.
+- **Sensitive data warning.** On first use, remind the user: "Scorecard data may contain sensitive business metrics. Use a private repo."
+
+## Integration Notes
+
+### L10 Meetings (ceos-l10)
+
+- **Read:** `ceos-l10` reads the latest weekly scorecard during Section 3 (Scorecard Review) of the L10 meeting. Each metric owner reports their number and the team discusses any off-track items.
+- **Suggested flow:** Off-track metrics that persist for 3+ weeks should become Issues via `ceos-ids`.
+
+### IDS (ceos-ids)
+
+- **Related:** Metrics that are consistently off-track may surface as Issues. When escalating, suggest: "This metric has been off-track for [N] weeks. Create an Issue with `ceos-ids` to investigate the root cause."
+
+### Annual Planning (ceos-annual)
+
+- **Read:** `ceos-annual` reviews Scorecard metrics during the annual planning session. The team evaluates whether existing metrics are still the right numbers to track and adds or removes metrics for the new year.
+
+### Read-Only Principle
+
+Other skills read `data/scorecard/` for reference. **Only `ceos-scorecard` writes to scorecard files.** This preserves a single source of truth for business metrics.

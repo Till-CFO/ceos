@@ -1,6 +1,8 @@
 ---
 name: ceos-quarterly
 description: Use when conducting, scheduling, or reviewing quarterly conversations between managers and direct reports
+file-access: [data/conversations/, templates/quarterly-conversation.md, data/vision.md, data/accountability.md, data/rocks/, data/people/]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-quarterly
@@ -361,3 +363,29 @@ Highlight:
 - **Sensitive data warning.** On first use in a session, remind the user: "Quarterly conversations contain sensitive performance data. Ensure your CEOS repo is private."
 - **Respect the agenda.** Walk through all 5 sections in order. Don't skip sections even if the user tries to rush — each one serves a purpose. But keep each section focused and time-efficient.
 - **Don't auto-invoke skills.** When conversation results suggest updating the People Analyzer or creating an issue, offer the option but let the user decide. Say "Would you like to update the People Analyzer?" rather than doing it automatically.
+
+## Integration Notes
+
+### V/TO (ceos-vto)
+
+- **Read:** `ceos-quarterly` reads Core Values from `data/vision.md` for the Core Values Alignment section (Section 1) of the conversation.
+
+### People Analyzer (ceos-people)
+
+- **Read:** `ceos-quarterly` reads People Analyzer evaluations from `data/people/` as reference points for Core Values and GWC discussions. If ratings differ significantly, the skill suggests updating via `ceos-people`.
+
+### Rocks (ceos-rocks)
+
+- **Read:** `ceos-quarterly` reads Rock files from `data/rocks/[quarter]/` to show the person's Rock status during Section 3 (Rocks Review). It does not modify Rock files.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-quarterly` reads `data/accountability.md` to identify the person's seat(s) and reporting structure for GWC evaluation and scheduling.
+
+### To-Dos (ceos-todos)
+
+- **Related:** Action items from quarterly conversations should be created as To-Dos via `ceos-todos` Create mode with `source: quarterly`.
+
+### Write Principle
+
+**Only `ceos-quarterly` writes to `data/conversations/`.** Other skills reference conversation data for context. The quarterly conversation file is the sole record of each manager-direct report check-in.

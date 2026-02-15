@@ -1,6 +1,8 @@
 ---
 name: ceos-vto
 description: Use when reviewing or updating the company Vision/Traction Organizer
+file-access: [data/vision.md, templates/vision.md, data/accountability.md, data/rocks/]
+tools-used: [Read, Write, Edit]
 ---
 
 # ceos-vto
@@ -127,3 +129,30 @@ For alignment checks, use the summary format shown in Step 4.
 - **Don't modify Rocks or Issues directly.** The Quarterly Rocks and Issues List sections in the V/TO link to `data/rocks/` and `data/issues/`. Direct the user to `ceos-rocks` or `ceos-ids` for those.
 - **One section at a time.** Don't try to rewrite the entire V/TO at once. Guide the user through focused updates.
 - **Respect the planning horizons.** Core Values and Core Focus should change rarely (annually at most). 10-Year Target shifts slowly. 3-Year Picture and 1-Year Plan are reviewed quarterly.
+- **Don't auto-invoke other skills.** Mention `ceos-rocks`, `ceos-ids`, and `ceos-annual` when relevant, but let the user decide when to switch workflows.
+- **Sensitive data warning.** On first use, remind the user: "The V/TO may contain sensitive strategic data. Use a private repo."
+
+## Integration Notes
+
+### Rocks (ceos-rocks)
+
+- **Read:** `ceos-rocks` reads the 1-Year Plan section from `data/vision.md` when setting Rocks to check alignment. Each Rock should connect to a 1-Year Plan goal.
+- **Suggested flow:** After updating the 1-Year Plan, suggest: "Want to check Rock alignment? Use `ceos-rocks` Tracking mode."
+
+### People Analyzer (ceos-people)
+
+- **Read:** `ceos-people` reads Core Values from `data/vision.md` to evaluate team members against the company's values.
+- **Suggested flow:** If Core Values are updated, mention: "Core Values changed — existing people evaluations may need refreshing via `ceos-people`."
+
+### Annual Planning (ceos-annual)
+
+- **Read/Write:** `ceos-annual` facilitates a full V/TO refresh during the annual planning session. The annual skill guides the team through updating each section.
+- **Suggested flow:** V/TO updates outside annual planning are fine for minor changes. Major strategic shifts should wait for the annual session.
+
+### Quarterly Conversations (ceos-quarterly)
+
+- **Read:** `ceos-quarterly` references V/TO goals during quarterly conversations to assess alignment between individual performance and company direction.
+
+### Write Principle
+
+**Only `ceos-vto` writes to `data/vision.md`.** Other skills read it for reference (Core Values, 1-Year Plan, Core Focus). The annual planning session is the one structured time to do a full V/TO refresh, but ad-hoc updates via `ceos-vto` are appropriate for corrections and minor changes.

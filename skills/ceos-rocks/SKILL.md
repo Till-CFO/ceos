@@ -1,6 +1,8 @@
 ---
 name: ceos-rocks
 description: Use when setting, tracking, or scoring quarterly Rocks
+file-access: [data/rocks/, templates/rock.md, data/vision.md]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-rocks
@@ -206,3 +208,33 @@ If completion rate is below 80%, flag it: "Below the 80% target. Consider: Were 
 - **Respect quarter boundaries.** Rocks in `data/rocks/2026-Q1/` belong to Q1. Don't move them between quarters — create new Rocks in the next quarter instead.
 - **Cross-reference V/TO.** When setting Rocks, check alignment with the 1-Year Plan from `data/vision.md`. Use `ceos-vto` if deeper vision review is needed.
 - **ID uniqueness.** Always check existing files before assigning an ID to avoid collisions.
+- **Don't auto-invoke other skills.** Mention `ceos-vto`, `ceos-l10`, and `ceos-annual` when relevant, but let the user decide when to switch workflows.
+- **Sensitive data warning.** On first use, remind the user: "Rocks may contain sensitive business priorities. Use a private repo."
+
+## Integration Notes
+
+### V/TO (ceos-vto)
+
+- **Read:** `ceos-rocks` reads `data/vision.md` to check the 1-Year Plan when setting Rocks. Each Rock should connect to a 1-Year Plan goal.
+- **Suggested flow:** If Rocks don't align with the 1-Year Plan, suggest: "Review the V/TO with `ceos-vto` to ensure strategic alignment."
+
+### L10 Meetings (ceos-l10)
+
+- **Read:** `ceos-l10` reads Rock files during Section 4 (Rock Review) of the L10 meeting. Each Rock owner reports on_track or off_track status.
+- **Suggested flow:** Off-track Rocks should be discussed further in the IDS section of the L10.
+
+### Quarterly Conversations (ceos-quarterly)
+
+- **Read:** `ceos-quarterly` references Rock progress during quarterly conversations. Rock ownership and status provide context for individual performance discussions.
+
+### Annual Planning (ceos-annual)
+
+- **Read/Write:** During annual planning, the team scores the outgoing quarter's Rocks and sets Q1 Rocks for the new year. `ceos-annual` orchestrates this; `ceos-rocks` handles the actual Rock creation and scoring.
+
+### To-Dos (ceos-todos)
+
+- **Related:** Rock milestones may generate To-Dos during L10 meetings. These To-Dos are tracked in `data/todos/` via `ceos-todos` with `source: l10`.
+
+### Read-Only Principle
+
+Other skills read `data/rocks/` for reference. **Only `ceos-rocks` writes to Rock files.** This preserves a single source of truth for quarterly priorities.

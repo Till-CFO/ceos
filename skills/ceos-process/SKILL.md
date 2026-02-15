@@ -1,6 +1,8 @@
 ---
 name: ceos-process
 description: Use when documenting core processes or reviewing process followability
+file-access: [data/processes/, templates/process.md, data/vision.md]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-process
@@ -280,3 +282,20 @@ After simplification: "The process has changed — consider re-auditing FBA scor
 - **ID uniqueness.** Always check existing files before assigning an ID to avoid collisions.
 - **Don't delete deprecated processes.** Change status to `deprecated` instead. Git history provides the audit trail.
 - **Steps start with verbs.** Guide users toward actionable steps ("Send email", "Review document") rather than vague descriptions ("Email stuff").
+- **Don't auto-invoke other skills.** Mention `ceos-vto` when relevant for Core Focus alignment, but let the user decide when to switch workflows.
+- **Sensitive data warning.** On first use, remind the user: "Process documentation may contain sensitive operational details. Use a private repo."
+
+## Integration Notes
+
+### Self-Contained
+
+This skill manages process documentation independently. No other CEOS skills read from or write to `data/processes/`.
+
+### V/TO Reference (ceos-vto)
+
+- **Read:** `ceos-process` reads `data/vision.md` for Core Focus and Proven Process alignment when documenting new processes. It does not write to the V/TO file.
+- **Suggested flow:** If a process doesn't align with the Core Focus, suggest reviewing the V/TO with `ceos-vto`.
+
+### Why Self-Contained?
+
+Unlike other EOS components that cross-reference each other (Rocks → V/TO, Scorecard → L10), core processes are standalone documentation. They may be referenced informally during L10 meetings or annual planning, but there are no formal data dependencies between process files and other CEOS data files.

@@ -1,6 +1,8 @@
 ---
 name: ceos-ids
 description: Use when identifying, discussing, or solving issues using the EOS IDS process
+file-access: [data/issues/, templates/issue.md]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-ids
@@ -233,3 +235,25 @@ This is the same as the three modes above, just run sequentially on a single iss
 - **ID uniqueness.** Check both `open/` and `solved/` directories when generating a new ID to avoid collisions.
 - **File lifecycle.** Issues start in `data/issues/open/`, move to `data/issues/solved/` when the IDS process is complete. Don't delete issue files — solved issues are the audit trail.
 - **Integrate with L10.** During L10 meetings, IDS is Section 6. The `ceos-l10` skill will surface the issues list — this skill handles the actual IDS work on individual issues.
+- **Don't auto-invoke other skills.** Mention `ceos-l10`, `ceos-todos`, and `ceos-vto` when relevant, but let the user decide when to switch workflows.
+- **Sensitive data warning.** On first use, remind the user: "Issues may contain sensitive business problems and personnel matters. Use a private repo."
+
+## Integration Notes
+
+### L10 Meetings (ceos-l10)
+
+- **Read:** `ceos-l10` reads open issues from `data/issues/open/` during Section 6 (IDS) of the L10 meeting. The L10 skill surfaces the prioritized list; `ceos-ids` handles the actual Identify, Discuss, Solve work on individual issues.
+- **Suggested flow:** New issues surfaced during L10 should be created via `ceos-ids` Create mode.
+
+### To-Dos (ceos-todos)
+
+- **Related:** When an issue is solved, the Solve step creates To-Dos with owners and due dates. These should be tracked in `data/todos/` via `ceos-todos` Create mode with `source: ids`.
+- **Suggested flow:** After solving an issue, suggest: "Create To-Dos for these action items with `ceos-todos`."
+
+### V/TO (ceos-vto)
+
+- **Read:** Issues categorized as `vision` relate to V/TO alignment. When such issues are identified, reference `data/vision.md` for context on the company's Core Focus and strategic direction.
+
+### Read-Only Principle
+
+Other skills read `data/issues/` for reference. **Only `ceos-ids` writes to issue files.** This preserves a single source of truth for issue tracking and resolution.

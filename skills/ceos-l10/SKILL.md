@@ -1,6 +1,8 @@
 ---
 name: ceos-l10
 description: Use when running or reviewing a Level 10 weekly leadership meeting
+file-access: [data/meetings/l10/, templates/l10-meeting.md, data/scorecard/weeks/, data/rocks/, data/issues/open/]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-l10
@@ -196,3 +198,30 @@ During the meeting, display each section header with its time box as you move th
 - **Don't auto-invoke skills.** When IDS work creates an issue worth tracking, mention that `ceos-ids` can create the issue file, but let the user decide. Same for scorecard logging (`ceos-scorecard`).
 - **One meeting per day.** If an L10 already exists for the date, confirm before overwriting.
 - **Save at the end.** Write the complete meeting file at the end, not incrementally during the meeting.
+- **Sensitive data warning.** On first use, remind the user: "L10 meeting notes may contain sensitive business discussions and personnel matters. Use a private repo."
+
+## Integration Notes
+
+### Scorecard (ceos-scorecard)
+
+- **Read:** `ceos-l10` reads the latest weekly scorecard from `data/scorecard/weeks/` during Section 2 (Scorecard Review). Each metric owner reports their number and off-track items are flagged for the Issues list.
+- **Suggested flow:** Off-track metrics that persist for 3+ weeks should become Issues via `ceos-ids`.
+
+### Rocks (ceos-rocks)
+
+- **Read:** `ceos-l10` reads Rock files from `data/rocks/[current-quarter]/` during Section 3 (Rock Review). Each Rock owner reports on_track or off_track status.
+- **Suggested flow:** Off-track Rocks should be discussed further in the IDS section.
+
+### To-Dos (ceos-todos)
+
+- **Read/Write:** `ceos-l10` reads previous meeting To-Dos during Section 5 (To-Do Review) and creates new To-Dos during Section 7 (Conclude). To-Dos created during L10 use `source: l10`.
+- **Suggested flow:** Use `ceos-todos` Create mode for formal To-Do tracking after the meeting.
+
+### IDS (ceos-ids)
+
+- **Read:** `ceos-l10` reads open issues from `data/issues/open/` during Section 6 (IDS). The L10 surfaces the prioritized list; `ceos-ids` handles the formal Identify, Discuss, Solve work on individual issues.
+- **Suggested flow:** New issues surfaced during L10 should be created via `ceos-ids` Create mode.
+
+### Orchestration Principle
+
+`ceos-l10` is the orchestrator — it reads data from multiple skills during the meeting but defers to each skill for formal create/update operations. The meeting file at `data/meetings/l10/YYYY-MM-DD.md` is the only file `ceos-l10` writes directly.

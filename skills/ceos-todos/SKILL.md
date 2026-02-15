@@ -310,6 +310,7 @@ Analyze the data for actionable patterns:
 - **To-Dos vs Rocks.** If a To-Do has a due date more than 14 days out or describes a large initiative, suggest: "This sounds like it might be a Rock rather than a To-Do. Rocks are 90-day priorities managed by `ceos-rocks`."
 - **Completion rate only reflects `data/todos/`.** To-Dos embedded in old L10 meeting notes are not counted. The Review mode should note this if the user asks about discrepancies.
 - **Source field is immutable.** Once set, don't change the source — it's the audit trail for where the To-Do originated.
+- **Sensitive data warning.** On first use, remind the user: "To-Dos may contain sensitive action items and personnel references. Use a private repo."
 
 ## Integration Notes
 

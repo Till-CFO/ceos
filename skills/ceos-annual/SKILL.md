@@ -1,6 +1,8 @@
 ---
 name: ceos-annual
 description: Use when conducting, reviewing, or planning the annual planning session
+file-access: [data/annual/, templates/annual-planning.md, data/vision.md, data/rocks/, data/scorecard/, data/issues/, data/accountability.md, data/people/]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-annual
@@ -435,3 +437,33 @@ After V/TO is refreshed, offer:
 - **Don't skip sections in Plan mode.** Walk through all 7 agenda sections in order. Each serves a purpose. But keep each section focused — this is a full-day session, not a lecture.
 - **Sensitive strategic data warning.** On first use in a session, remind the user: "Annual planning notes contain sensitive strategic data. Ensure your CEOS repo is private."
 - **1-Year Plan alignment.** When setting Q1 Rocks (Section 5), verify each Rock connects to a 1-Year Plan goal. Flag any that don't align.
+
+## Integration Notes
+
+### V/TO (ceos-vto)
+
+- **Read/Write:** `ceos-annual` reads `data/vision.md` for the current V/TO state and may update it during the V/TO Refresh section (Section 2). Inline updates to `data/vision.md` are allowed with user approval; alternatively, formal updates can be deferred to `ceos-vto` after the session.
+
+### Rocks (ceos-rocks)
+
+- **Read/Write:** `ceos-annual` reads Rock files from all quarters for the year-in-review scoring and creates Q1 Rock decisions during Section 5. Formal Rock file creation should be done via `ceos-rocks` after the session.
+
+### Scorecard (ceos-scorecard)
+
+- **Read:** `ceos-annual` reads scorecard data from `data/scorecard/weeks/` for trend analysis during the Year in Review (Section 1). Scorecard metric updates (Section 6) are recorded in the planning file; formal updates to `data/scorecard/metrics.md` should be done via `ceos-scorecard`.
+
+### People Analyzer (ceos-people)
+
+- **Read:** `ceos-annual` reads People Analyzer evaluations from `data/people/` during the Organizational Checkup (Section 4). Formal People Analyzer updates should be done via `ceos-people`.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-annual` reads `data/accountability.md` during the Organizational Checkup (Section 4) to review the org structure and identify empty or misaligned seats.
+
+### IDS (ceos-ids)
+
+- **Read:** `ceos-annual` reads open issues from `data/issues/open/` and solved issues from `data/issues/solved/` during the Issues Sweep (Section 3). Formal issue creation and resolution should be done via `ceos-ids`.
+
+### Orchestration Principle
+
+`ceos-annual` is the most comprehensive orchestrator — it reads data from nearly all other skills during the planning session. The annual planning file at `data/annual/YYYY-planning.md` captures decisions; individual skills handle the operational artifacts (Rock files, scorecard updates, V/TO changes, etc.).

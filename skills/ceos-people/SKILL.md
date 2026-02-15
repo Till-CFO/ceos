@@ -1,6 +1,8 @@
 ---
 name: ceos-people
 description: Use when evaluating team members — Core Values alignment and GWC (right people, right seats)
+file-access: [data/people/, templates/people-analyzer.md, data/vision.md, data/accountability.md]
+tools-used: [Read, Write, Glob]
 ---
 
 # ceos-people
@@ -331,4 +333,35 @@ If any seats are below bar or empty: "These should be discussed at the next L10.
 - **Status is judgment, not formula.** The skill suggests a status based on scores, but the user always confirms. Leadership judgment matters more than a mechanical calculation.
 - **Sensitive data warning.** On first use, remind the user: "People evaluations contain sensitive performance data. Use a private repo, not a public one."
 - **Cross-reference accountability.md.** When evaluating GWC, always check the person's seat from `data/accountability.md` rather than asking the user to recall it.
+- **Don't auto-invoke other skills.** Mention `ceos-vto`, `ceos-quarterly`, and `ceos-ids` when relevant, but let the user decide when to switch workflows.
 - **Quarterly cadence.** Flag if no quarterly review has been run in > 100 days. People evaluations are meant to be regular, not ad-hoc.
+
+## Integration Notes
+
+### V/TO (ceos-vto)
+
+- **Read:** `ceos-people` reads Core Values from `data/vision.md` for the Core Values evaluation. It does not write to the V/TO file.
+- **Suggested flow:** If Core Values are updated via `ceos-vto`, existing people evaluations may need refreshing.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-people` reads `data/accountability.md` for the person's seat(s) during GWC evaluation. It does not write to the accountability file.
+- **Suggested flow:** If a person's seat changes in the accountability chart, their GWC evaluation should be re-run for the new seat.
+
+### Quarterly Conversations (ceos-quarterly)
+
+- **Read:** `ceos-quarterly` references People Analyzer evaluations from `data/people/` during quarterly conversations. Core Values and GWC ratings serve as reference points, not re-evaluations.
+- **Suggested flow:** If quarterly conversation ratings differ significantly from People Analyzer, suggest updating via `ceos-people`.
+
+### IDS (ceos-ids)
+
+- **Related:** Below-bar situations may create Issues for action plans. When a person's status is `below_bar` or `wrong_seat`, `ceos-people` offers to create an issue in `data/issues/open/`.
+- **Suggested flow:** Use `ceos-ids` for formal issue tracking of people-related action plans.
+
+### Annual Planning (ceos-annual)
+
+- **Read:** `ceos-annual` references People Analyzer evaluations during the Organizational Checkup section (Section 4) of the annual planning session.
+
+### Write Principle
+
+**Only `ceos-people` writes to `data/people/`.** Other skills read person evaluations for reference. The quarterly conversation skill references evaluations but directs updates back to `ceos-people`.
