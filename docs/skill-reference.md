@@ -1108,6 +1108,90 @@ Recurring Themes (2+ appearances)
 
 ---
 
+## ceos-dashboard — State of the Business Summary
+
+A read-only dashboard that aggregates data from all CEOS skills into a single view. Quick pulse check before L10 meetings, weekly reviews, or any time the leadership team needs the big picture.
+
+### When to Use
+
+- "Dashboard" or "show me the dashboard"
+- "State of the business" or "how are we doing?"
+- "Business health" or "pulse check"
+- "Overview" or "what's the state of things?"
+- Before L10 meetings for a pre-meeting snapshot
+
+### What It Shows
+
+| Section | Data Source | Summary |
+|---------|-----------|---------|
+| **V/TO Snapshot** | `data/vision.md` | Core Focus, 10-Year Target, 3-Year Picture, 1-Year Plan |
+| **Rock Status** | `data/rocks/[quarter]/` | Current quarter counts: on track, off track, complete, dropped |
+| **Scorecard Health** | `data/scorecard/weeks/` | This week's metrics: on track vs off track |
+| **Open Issues** | `data/issues/open/` | Count by priority, oldest unresolved |
+| **People Summary** | `data/people/` | Team size, flagged evaluations (privacy-aware — no names) |
+
+### Design Principles
+
+- **Read-only** — Dashboard never modifies any data files
+- **Graceful degradation** — Missing sections show "No data yet — run `ceos-X` to get started"
+- **Cross-skill suggestions** — Each section suggests the relevant skill for taking action
+
+### Example
+
+```
+You: "How are we doing?"
+
+Claude reads all CEOS data sources and shows:
+
+  State of the Business
+  ━━━━━━━━━━━━━━━━━━━━━
+  Date: 2026-02-14
+
+  V/TO — Acme Corp
+    Core Focus: Helping SMBs automate operations — B2B SaaS
+    10-Year Target: $100M ARR
+    1-Year Plan: $8M revenue, launch Product #2
+
+  Rocks — Q1 2026
+    Total: 6 | On Track: 4 | Off Track: 2
+    Off track: Hire VP Sales (daniel), Partner Program (brad)
+
+  Scorecard — W07
+    5 on track | 2 off track
+    Off track: New Customers (daniel)
+
+  Open Issues — 8 total
+    By priority: 2 P1 | 3 P2 | 2 P3 | 1 P4
+    Oldest: Slow customer onboarding (45 days)
+
+  People — 5 team members
+    Right person, right seat: 3 | Below bar: 1 | Wrong seat: 1
+    2 flagged — review with `ceos-people` for details
+
+  ━━━━━━━━━━━━━━━━━━━━━
+  Suggested Actions:
+    • Review off-track Rocks with `ceos-rocks`
+    • Investigate off-track metrics with `ceos-scorecard`
+    • Resolve 2 critical (P1) issues with `ceos-ids`
+```
+
+### Distinction from ceos-clarity
+
+Dashboard is a **quick status check** — factual counts and summaries. Clarity Break (`ceos-clarity`) is a **strategic reflection tool** — includes context plus guided reflection prompts. Use dashboard for meetings; use clarity for dedicated thinking time.
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `data/vision.md` | V/TO document (read-only) |
+| `data/rocks/YYYY-QN/` | Rock files for current quarter (read-only) |
+| `data/scorecard/weeks/` | Weekly scorecard entries (read-only) |
+| `data/issues/open/` | Open issues (read-only) |
+| `data/people/` | People evaluations (read-only) |
+| `data/accountability.md` | Accountability chart (read-only) |
+
+---
+
 ## ceos-kickoff — EOS Implementation Kickoff
 
 Facilitate the EOS implementation kickoff sequence — Focus Day, Vision Building Day 1, and Vision Building Day 2. These are the foundational sessions where a leadership team first implements EOS.
