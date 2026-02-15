@@ -21,6 +21,7 @@ ceos/
 │   ├── annual/            # Annual planning session records
 │   ├── quarterly/         # Quarterly planning session records
 │   ├── checkups/          # Organizational Checkup assessments
+│   ├── delegate/          # Delegate and Elevate audits
 │   └── todos/             # To-Do tracking
 ├── templates/             # Templates for new data files
 ├── docs/                  # Documentation (eos-primer.md)
@@ -119,10 +120,13 @@ Each skill owns exactly one data directory. Other skills may read from it but MU
 | ceos-annual | `data/annual/` | `data/vision.md`, `data/rocks/`, `data/scorecard/`, `data/issues/`, `data/accountability.md`, `data/people/` |
 | ceos-quarterly-planning | `data/quarterly/` | `data/rocks/`, `data/scorecard/`, `data/vision.md`, `data/issues/` |
 | ceos-checkup | `data/checkups/` | `data/vision.md`, `data/accountability.md`, `data/rocks/`, `data/scorecard/`, `data/people/`, `data/issues/` |
+| ceos-delegate | `data/delegate/` | `data/accountability.md`, `data/people/` |
 
 **Orchestrator skills** (`ceos-l10`, `ceos-annual`, `ceos-quarterly-planning`) read broadly but write only to their own data directory. They reference data from other skills during sessions and suggest follow-up actions via those skills.
 
 **Assessment skills** (`ceos-checkup`) read broadly for context but write only to their own data directory. They synthesize data from all Six Key Components to produce health assessments.
+
+**Development skills** (`ceos-delegate`) read from related skills for context (accountability chart seats, people evaluations) but write only to their own data directory. They help leaders improve their personal effectiveness.
 
 ## Creating New Skills
 
@@ -139,8 +143,21 @@ When creating:
 2. Include all required frontmatter fields
 3. Include both universal guardrails
 4. Write the Integration Notes section documenting all cross-skill data access
-5. Add a symlink: `ln -s /path/to/ceos/skills/ceos-newskill ~/.claude/skills/ceos-newskill`
-6. Update this CLAUDE.md's data ownership table
+5. Create `data/newskill/.gitkeep` (data directory)
+6. Create `templates/newskill.md` (template file, if the skill creates data files)
+7. Add a symlink: `ln -s /path/to/ceos/skills/ceos-newskill ~/.claude/skills/ceos-newskill`
+
+### Files to Update (CRITICAL — all must be done in the same commit)
+
+Every new skill requires updates to these files. Missing any causes documentation drift.
+
+| File | What to Update |
+|------|---------------|
+| `CLAUDE.md` | Add row to data ownership table, add `data/` entry to directory structure |
+| `README.md` | Add row to skills table, update skill count in heading + intro paragraph |
+| `setup.sh` | Add `mkdir -p "$CEOS_ROOT/data/newskill"` to the `init` function |
+| `docs/skill-reference.md` | Add skill entry (description, modes, example, files table) |
+| `docs/eos-primer.md` | Update Six Key Components table if the skill maps to one |
 
 ### Exemplar Skills
 

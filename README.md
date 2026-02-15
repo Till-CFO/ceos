@@ -1,6 +1,6 @@
 # CEOS
 
-**Run EOS with AI.** CEOS brings the [Entrepreneurial Operating System](https://www.eosworldwide.com/) to [Claude Code](https://docs.anthropic.com/en/docs/claude-code), giving your leadership team eleven AI-powered skills for Vision, Accountability Chart, Rocks, Scorecard, L10 Meetings, IDS, To-Dos, Process, People Analyzer, Quarterly Conversations, and Annual Planning.
+**Run EOS with AI.** CEOS brings the [Entrepreneurial Operating System](https://www.eosworldwide.com/) to [Claude Code](https://docs.anthropic.com/en/docs/claude-code), giving your leadership team fourteen AI-powered skills for Vision, Accountability Chart, Rocks, Scorecard, L10 Meetings, IDS, To-Dos, Process, People Analyzer, Quarterly Conversations, Annual Planning, Quarterly Planning, Organizational Checkup, and Delegate and Elevate.
 
 Clone. Setup. Run your business.
 
@@ -25,7 +25,7 @@ claude
 > "Let's set our quarterly rocks"
 ```
 
-## The 11 Skills
+## The 14 Skills
 
 | Skill | What It Does | Try Saying... |
 |-------|-------------|---------------|
@@ -40,12 +40,15 @@ claude
 | **ceos-people** | People Analyzer — right people, right seats (Core Values + GWC) | "Evaluate Brad" or "Quarterly people review" |
 | **ceos-quarterly** | Quarterly Conversations — formal manager/direct report check-ins | "Run quarterly conversation for Brad" or "Schedule quarterly conversations" |
 | **ceos-annual** | Annual Planning — year-end V/TO refresh and Rock setting | "Plan next year" or "Review 2025" or "Refresh our vision" |
+| **ceos-quarterly-planning** | Quarterly Planning — structured quarterly offsite for the leadership team | "Run quarterly planning" or "Start our quarterly session" |
+| **ceos-checkup** | Organizational Checkup — 20-question health assessment across Six Key Components | "Run an organizational checkup" or "How healthy is our organization?" |
+| **ceos-delegate** | Delegate and Elevate — 4-quadrant task audit for leadership focus | "Run delegate and elevate for Brad" or "What should I be delegating?" |
 
 ## How It Works
 
 ```
 ┌─────────────────────────────────┐
-│  skills/ceos-*/SKILL.md         │  ← Claude Code skills (11 EOS tools)
+│  skills/ceos-*/SKILL.md         │  ← Claude Code skills (14 EOS tools)
 ├─────────────────────────────────┤
 │  data/ + templates/             │  ← Your EOS data (markdown files)
 │  (markdown + YAML frontmatter)  │     Human-readable, git-tracked
