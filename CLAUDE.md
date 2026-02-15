@@ -19,6 +19,7 @@ ceos/
 │   ├── people/            # People Analyzer evaluations
 │   ├── conversations/     # Quarterly conversation records
 │   ├── annual/            # Annual planning session records
+│   ├── quarterly/         # Quarterly planning session records
 │   └── todos/             # To-Do tracking
 ├── templates/             # Templates for new data files
 ├── docs/                  # Documentation (eos-primer.md)
@@ -115,8 +116,9 @@ Each skill owns exactly one data directory. Other skills may read from it but MU
 | ceos-l10 | `data/meetings/l10/` | `data/scorecard/`, `data/rocks/`, `data/issues/` |
 | ceos-quarterly | `data/conversations/` | `data/vision.md`, `data/accountability.md`, `data/rocks/`, `data/people/` |
 | ceos-annual | `data/annual/` | `data/vision.md`, `data/rocks/`, `data/scorecard/`, `data/issues/`, `data/accountability.md`, `data/people/` |
+| ceos-quarterly-planning | `data/quarterly/` | `data/rocks/`, `data/scorecard/`, `data/vision.md`, `data/issues/` |
 
-**Orchestrator skills** (`ceos-l10`, `ceos-annual`) read broadly but write only to their own data directory. They reference data from other skills during sessions and suggest follow-up actions via those skills.
+**Orchestrator skills** (`ceos-l10`, `ceos-annual`, `ceos-quarterly-planning`) read broadly but write only to their own data directory. They reference data from other skills during sessions and suggest follow-up actions via those skills.
 
 ## Creating New Skills
 
