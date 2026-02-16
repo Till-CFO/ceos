@@ -17,7 +17,7 @@ The current 17 skills cover the full EOS toolkit — from core tools like V/TO a
 
 ## Skill File Structure
 
-Every CEOS skill lives in `skills/ceos-NAME/SKILL.md`. The file follows a unified 8-section structure defined in the [Skill Structure Contract](../CLAUDE.md).
+Every CEOS skill lives in `skills/ceos-NAME/SKILL.md`. The file follows a unified 8-section structure defined in the [Skill Structure Contract](skill-structure.md).
 
 ### The 8 Sections
 
