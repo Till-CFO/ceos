@@ -46,11 +46,23 @@ body:
       description: Select the CEOS skill this relates to, or "New Skill" if it doesn't exist yet.
       multiple: true
       options:
-        - ceos-vto (Vision/Traction Organizer)
+        - ceos-accountability (Accountability Chart)
+        - ceos-annual (Annual Planning)
+        - ceos-checkup (Organizational Checkup)
+        - ceos-clarity (Clarity Break)
+        - ceos-dashboard (Business Dashboard)
+        - ceos-delegate (Delegate and Elevate)
+        - ceos-ids (Issue Resolution)
+        - ceos-kickoff (EOS Kickoff)
+        - ceos-l10 (Level 10 Meetings)
+        - ceos-people (People Analyzer)
+        - ceos-process (Core Processes)
+        - ceos-quarterly (Quarterly Conversations)
+        - ceos-quarterly-planning (Quarterly Planning)
         - ceos-rocks (Quarterly Rocks)
         - ceos-scorecard (Weekly Measurables)
-        - ceos-l10 (Level 10 Meetings)
-        - ceos-ids (Issue Resolution)
+        - ceos-todos (To-Do Tracking)
+        - ceos-vto (Vision/Traction Organizer)
         - New Skill Needed
     validations:
       required: true
