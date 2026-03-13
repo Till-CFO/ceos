@@ -1,7 +1,7 @@
 ---
 name: ceos-quarterly-planning
 description: Use when conducting or reviewing a quarterly planning session for the leadership team
-file-access: [data/quarterly/, templates/quarterly-planning.md, data/rocks/, data/scorecard/, data/vision.md, data/issues/]
+file-access: [data/quarterly/, templates/quarterly-planning.md, data/rocks/, data/scorecard/, data/vision.md, data/issues/, data/accountability.md]
 tools-used: [Read, Write, Glob]
 ---
 
@@ -43,6 +43,7 @@ If `.ceos` is not found, stop and tell the user: "Not in a CEOS repository. Clon
 | `data/issues/open/` | Open issues (read for IDS sweep) |
 | `data/issues/solved/` | Solved issues (count for quarter summary) |
 | `templates/quarterly-planning.md` | Template for new quarterly planning files |
+| `data/accountability.md` | Accountability Chart (seat owners for Rock-owner alignment) |
 
 ### Planning File Format
 
@@ -117,6 +118,7 @@ Use when conducting the full quarterly planning session with the structured 6-se
    - `data/scorecard/metrics.md` — metric definitions and goals
    - `data/vision.md` — 1-Year Plan goals (for alignment)
    - `data/issues/open/` — open issues list (for IDS)
+   - `data/accountability.md` — seat owners (for Rock-owner alignment in Section 5)
 
 5. **Create the quarter directory** if it doesn't exist: `data/quarterly/`
 
@@ -266,6 +268,7 @@ This is a **light alignment check**, not a full V/TO refresh (that's annual).
    - **3-7 Rocks per person.** Flag if outside range: "Brad has 8 Rocks — consider consolidating."
    - **Alignment.** Each Rock should connect to a 1-Year Plan goal. Flag any that don't: "This Rock doesn't align to a specific 1-Year goal. Is it still a priority?"
    - **Measurability.** Each Rock should have a clear done/not-done criteria.
+   - **Seat alignment.** Cross-reference Rock owners against `data/accountability.md`. Each Rock's subject area should match the owner's seat responsibilities. Flag mismatches: "This Rock falls under [Seat] responsibilities. Should [Seat Owner] own it?"
 
 5. **Display the full Rock list** for approval:
 
@@ -481,6 +484,11 @@ If yes, write the summary. If a planning file already exists for this quarter, a
 ### Annual Planning (ceos-annual)
 
 - **Related:** Annual planning is the yearly superset that includes V/TO refresh, year-in-review, and Q1 Rock setting. Quarterly planning fills the 3 inter-annual quarters (Q2, Q3, Q4 planning). Annual planning sets the 1-Year Plan; quarterly planning executes against it.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-quarterly-planning` reads `data/accountability.md` during Section 5 (Set Next Quarter Rocks) to validate that Rock owners match seat responsibilities. Each Rock's subject area should map to the owner's seat in the Accountability Chart.
+- **Suggested flow:** If a Rock doesn't align with the owner's seat, suggest: "This Rock falls under [Seat] responsibilities. Should [Seat Owner] own it instead?"
 
 ### Orchestration Principle
 

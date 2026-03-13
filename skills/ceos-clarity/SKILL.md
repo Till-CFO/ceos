@@ -1,7 +1,7 @@
 ---
 name: ceos-clarity
 description: Use when taking a Clarity Break — stepping back from day-to-day work for strategic thinking time
-file-access: [data/clarity/, templates/clarity-break.md, data/vision.md, data/rocks/, data/scorecard/, data/issues/open/]
+file-access: [data/clarity/, templates/clarity-break.md, data/vision.md, data/rocks/, data/scorecard/, data/issues/open/, data/accountability.md]
 tools-used: [Read, Write, Glob]
 ---
 
@@ -39,6 +39,7 @@ If `.ceos` is not found, stop and tell the user: "Not in a CEOS repository. Clon
 | `data/scorecard/weeks/` | Recent scorecard data for trend context |
 | `data/issues/open/` | Open issues for awareness context |
 | `templates/clarity-break.md` | Template for new Clarity Break files |
+| `data/accountability.md` | Accountability Chart (org structure for strategic context) |
 
 ### File Naming
 
@@ -80,6 +81,7 @@ Read current data to provide a strategic snapshot. Keep each section to 2-3 line
 2. **Rock status**: Read `data/rocks/[current-quarter]/`. Count on_track vs off_track. List any off-track Rocks.
 3. **Scorecard trends**: Read the 2-3 most recent files in `data/scorecard/weeks/`. Note any metrics consistently off-track.
 4. **Open issues**: Read `data/issues/open/`. Count total open issues. List the 3-5 highest priority ones.
+5. **Org structure**: Read `data/accountability.md`. Note any unfilled seats or gaps relevant to the reflection topics.
 
 Present the summary:
 
@@ -255,6 +257,11 @@ If yes, read and display the full file content.
 
 - **Related:** Clarity Break insights are designed to feed into the next L10 meeting. Issues identified during a Clarity Break can be raised during the L10's IDS section.
 - **Suggested flow:** Mention any unresolved Clarity Break issues during the L10. The L10 skill will surface them from `data/issues/open/` if they've been formally created.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-clarity` reads `data/accountability.md` during Start mode to surface org structure context — unfilled seats, responsibility gaps, or role misalignments that may be worth reflecting on.
+- **Suggested flow:** If the Clarity Break reveals accountability gaps, suggest: "Consider reviewing the Accountability Chart with `ceos-accountability`."
 
 ### Write Principle
 

@@ -1,7 +1,7 @@
 ---
 name: ceos-scorecard
 description: Use when defining metrics, logging weekly scorecard numbers, or analyzing trends
-file-access: [data/scorecard/, templates/scorecard-metrics.md, templates/scorecard-week.md]
+file-access: [data/scorecard/, templates/scorecard-metrics.md, templates/scorecard-week.md, data/accountability.md]
 tools-used: [Read, Write, Glob]
 ---
 
@@ -36,6 +36,7 @@ If `.ceos` is not found, stop and tell the user: "Not in a CEOS repository. Clon
 | `data/scorecard/weeks/YYYY-WNN.md` | Weekly scorecard entries |
 | `templates/scorecard-metrics.md` | Template for metrics definition file |
 | `templates/scorecard-week.md` | Template for weekly entries |
+| `data/accountability.md` | Accountability Chart (seat owners for metric ownership validation) |
 
 ### Week Format
 
@@ -78,6 +79,7 @@ For each new metric, collect:
 - **One owner per metric.** Not shared.
 - **Measurable.** Must be a specific number, not subjective.
 - **Prefer leading indicators.** Activity metrics (calls made, demos scheduled) predict results better than lagging metrics (revenue).
+- **Seat alignment.** Cross-reference metric owners against `data/accountability.md`. Each metric should map to a seat's responsibilities. Flag mismatches, e.g., "This metric seems to fall under [Seat] responsibilities. Should [Seat Owner] own it?". If a metric doesn't fit any seat, it may indicate a gap in the Accountability Chart.
 
 #### Step 4: Update the File
 
@@ -196,6 +198,11 @@ If any metric has been off-track 3+ consecutive weeks:
 ### Annual Planning (ceos-annual)
 
 - **Read:** `ceos-annual` reviews Scorecard metrics during the annual planning session. The team evaluates whether existing metrics are still the right numbers to track and adds or removes metrics for the new year.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-scorecard` reads `data/accountability.md` when defining metrics to validate that metric owners match seat responsibilities. Revenue metrics belong to whoever owns the Sales & Marketing seat; delivery metrics belong to the Delivery seat owner.
+- **Suggested flow:** If a metric owner doesn't map to a seat, suggest: "This metric doesn't align with any seat in the Accountability Chart. Should it belong to the [Seat] owner?"
 
 ### Read-Only Principle
 

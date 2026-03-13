@@ -1,7 +1,7 @@
 ---
 name: ceos-process
 description: Use when documenting core processes or reviewing process followability
-file-access: [data/processes/, templates/process.md, data/vision.md]
+file-access: [data/processes/, templates/process.md, data/vision.md, data/accountability.md]
 tools-used: [Read, Write, Glob]
 ---
 
@@ -35,6 +35,7 @@ If `.ceos` is not found, stop and tell the user: "Not in a CEOS repository. Clon
 | `data/processes/` | Process documentation files |
 | `data/vision.md` | V/TO document (Core Focus and Proven Process for alignment) |
 | `templates/process.md` | Template for creating new process files |
+| `data/accountability.md` | Accountability Chart (seat owners for process-owner alignment) |
 
 ### Process File Format
 
@@ -102,6 +103,7 @@ For the steps, guide the user:
 - **One owner.** If the user tries to assign multiple owners, explain: "Each process has one owner — the person accountable for it being documented, simplified, and followed. Who should own this?"
 - **Step count.** If more than 30 steps, warn: "This process has 30+ steps. Consider splitting into sub-processes or simplifying."
 - **Duplicate check.** If a process with a similar title already exists, ask: "A process called '[title]' already exists. Update that one, or create a new one?"
+- **Seat alignment.** Cross-reference the process owner against `data/accountability.md`. The owner should hold the seat whose responsibilities align with the process's domain. Flag mismatches: "This process falls under [Seat] responsibilities. Should [Seat Owner] own it?"
 
 #### Step 5: Generate the ID
 
@@ -296,6 +298,11 @@ This skill manages process documentation independently. No other CEOS skills rea
 - **Read:** `ceos-process` reads `data/vision.md` for Core Focus and Proven Process alignment when documenting new processes. It does not write to the V/TO file.
 - **Suggested flow:** If a process doesn't align with the Core Focus, suggest reviewing the V/TO with `ceos-vto`.
 
-### Why Self-Contained?
+### Accountability Chart (ceos-accountability)
 
-Unlike other EOS components that cross-reference each other (Rocks → V/TO, Scorecard → L10), core processes are standalone documentation. They may be referenced informally during L10 meetings or annual planning, but there are no formal data dependencies between process files and other CEOS data files.
+- **Read:** `ceos-process` reads `data/accountability.md` when documenting or auditing processes to validate that process owners match seat responsibilities. A sales process should be owned by whoever holds the Sales & Marketing seat; a delivery process by the Delivery seat owner.
+- **Suggested flow:** If a process owner doesn't match the responsible seat, suggest: "This process falls under [Seat] responsibilities. Should [Seat Owner] own it?"
+
+### Why Mostly Self-Contained?
+
+Unlike other EOS components that cross-reference each other (Rocks → V/TO, Scorecard → L10), core processes are standalone documentation. They reference the V/TO for alignment and the Accountability Chart for owner validation, but there are no formal data dependencies between process files and other CEOS data files.

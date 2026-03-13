@@ -1,7 +1,7 @@
 ---
 name: ceos-l10
 description: Use when running or reviewing a Level 10 weekly leadership meeting
-file-access: [data/meetings/l10/, templates/l10-meeting.md, data/scorecard/weeks/, data/rocks/, data/issues/open/]
+file-access: [data/meetings/l10/, templates/l10-meeting.md, data/scorecard/weeks/, data/rocks/, data/issues/open/, data/accountability.md]
 tools-used: [Read, Write, Glob]
 ---
 
@@ -37,6 +37,7 @@ If `.ceos` is not found, stop and tell the user: "Not in a CEOS repository. Clon
 | `data/issues/open/` | Open issues (surfaced during IDS section) |
 | `data/meetings/l10/` | Previous L10s (for To-Do review) |
 | `templates/l10-meeting.md` | Meeting template |
+| `data/accountability.md` | Accountability Chart (seat owners for To-Do assignment validation) |
 
 ### Meeting Structure (90 minutes)
 
@@ -147,7 +148,7 @@ For each of the top 3 issues, follow the IDS process:
 
 1. **Identify** — What is the real issue? Dig past symptoms. Use the 5 Whys if the root cause isn't obvious.
 2. **Discuss** — Each person shares their perspective. Stay focused — no tangents, no solving yet.
-3. **Solve** — What's the action? Create at least one To-Do with an owner and due date.
+3. **Solve** — What's the action? Create at least one To-Do with an owner and due date. Cross-reference `data/accountability.md` to validate that the To-Do owner matches the seat responsible for that area.
 
 Record the IDS work in the meeting notes. If this creates a new issue file, use `ceos-ids` or write to `data/issues/open/` directly.
 
@@ -221,6 +222,11 @@ During the meeting, display each section header with its time box as you move th
 
 - **Read:** `ceos-l10` reads open issues from `data/issues/open/` during Section 6 (IDS). The L10 surfaces the prioritized list; `ceos-ids` handles the formal Identify, Discuss, Solve work on individual issues.
 - **Suggested flow:** New issues surfaced during L10 should be created via `ceos-ids` Create mode.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-l10` reads `data/accountability.md` during IDS (Step 7c) to validate that To-Do owners match seat responsibilities. When assigning action items, the person who owns the relevant seat should own the To-Do.
+- **Suggested flow:** If a To-Do is assigned to someone outside the responsible seat, flag it: "This action falls under the [Seat] responsibilities. Should [Seat Owner] own it instead?"
 
 ### Orchestration Principle
 

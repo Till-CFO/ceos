@@ -1,7 +1,7 @@
 ---
 name: ceos-rocks
 description: Use when setting, tracking, or scoring quarterly Rocks
-file-access: [data/rocks/, templates/rock.md, data/vision.md]
+file-access: [data/rocks/, templates/rock.md, data/vision.md, data/accountability.md]
 tools-used: [Read, Write, Glob]
 ---
 
@@ -35,6 +35,7 @@ If `.ceos` is not found, stop and tell the user: "Not in a CEOS repository. Clon
 | `data/rocks/QUARTER/` | Rock files for each quarter (e.g., `data/rocks/2026-Q1/`) |
 | `data/vision.md` | V/TO document (1-Year Plan for alignment checks) |
 | `templates/rock.md` | Template for creating new Rock files |
+| `data/accountability.md` | Accountability Chart (seat owners for Rock-owner alignment) |
 
 ### Rock File Format
 
@@ -113,6 +114,7 @@ For each Rock, collect:
 - **3-7 Rocks per person.** If someone has fewer than 3, ask if they should own more. If more than 7, flag: "Too many Rocks for [person]. EOS recommends 3-7. Which ones are the real priorities?"
 - **Alignment check.** Does each Rock connect to a 1-Year Plan goal? Flag any that don't.
 - **Due date.** Set to the last day of the quarter.
+- **Seat alignment.** Cross-reference Rock owners against `data/accountability.md`. Flag mismatches if a Rock's subject area doesn't match the owner's seat responsibilities, for example: "This Rock falls under the [Seat] responsibilities. Should [Seat Owner] own it instead?"
 
 #### Step 5: Generate the ID
 
@@ -261,6 +263,11 @@ If completion rate is below 80%, flag it: "Below the 80% target. Consider: Were 
 ### To-Dos (ceos-todos)
 
 - **Related:** Rock milestones may generate To-Dos during L10 meetings. These To-Dos are tracked in `data/todos/` via `ceos-todos` with `source: l10`.
+
+### Accountability Chart (ceos-accountability)
+
+- **Read:** `ceos-rocks` reads `data/accountability.md` when setting Rocks to validate that Rock owners match seat responsibilities. A Rock about sales pipeline should belong to whoever owns the Sales & Marketing seat.
+- **Suggested flow:** If a Rock doesn't align with the owner's seat, suggest: "This Rock falls under the [Seat] responsibilities. Should [Seat Owner] own it instead?"
 
 ### Read-Only Principle
 
