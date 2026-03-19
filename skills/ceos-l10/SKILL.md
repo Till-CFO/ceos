@@ -180,6 +180,63 @@ If average is below 8: "Below the 8/10 target. What could we improve for next we
 4. Update the frontmatter with the average rating.
 5. Remind: "Run `git commit` to save the meeting notes."
 
+## Transcript Mode
+
+A hybrid workflow designed for teams who want to stay off screens during the meeting and use Apple Voice Memos (or any voice transcription) to feed Claude at two natural break points.
+
+### When to Use
+
+- "Here's my transcript" or "fill this in from my recording"
+- "Transcript mode" or "hybrid L10"
+- Any time a voice memo transcript is pasted instead of running the meeting live
+
+### How It Works
+
+The meeting runs in two recorded segments with Claude engaged at each break.
+
+#### Break 1 — Before IDS
+
+Stop the recording after To-Do Review. Paste the transcript and tell Claude:
+- Who was in the meeting (names, since Voice Memos doesn't label speakers)
+- That this covers sections 1–5
+
+Claude will:
+1. Parse the transcript and fill sections 1–5 of the meeting file
+2. Build the Issues list from off-track Scorecard items, off-track Rocks, open issues in `data/issues/open/`, and anything raised in the conversation
+3. Suggest top 3 prioritization based on what was discussed and existing issue data
+4. Flag any gaps (missing scorecard numbers, unclear To-Do status) before IDS starts
+
+The team walks into IDS with a ranked Issues list already prepared.
+
+#### Break 2 — Before Conclude
+
+Stop the recording after IDS. Paste the transcript.
+
+Claude will:
+1. Parse each issue discussed and fill the IDS section (Identify, Discuss, Solve)
+2. Extract all To-Dos with owners and due dates
+3. Flag any To-Dos missing an owner or due date
+4. Draft cascading messages based on decisions made
+5. Present the complete Conclude section ready to read back to the room
+
+The team spends Conclude confirming the To-Do list and rating the meeting — nothing to reconstruct from memory.
+
+### Transcript Tips
+
+- **Name the attendees upfront.** Paste a quick header before the transcript: `Attendees: Brad, Dana, Sam, Jordan`. Voice Memos doesn't label speakers; Claude infers from context but a name list helps.
+- **Don't clean up the transcript.** Filler words, crosstalk, and incomplete sentences are fine — Claude works from meaning, not polish.
+- **One paste per break.** Don't combine both segments into one paste. The break point is where Claude's IDS prep adds the most value.
+- **Implicit issues are fair game.** If the same problem surfaces three times across different topics, Claude will flag it as a potential root cause issue even if it wasn't formally added to the list.
+
+### Guardrails
+
+- **Never infer owners.** If a To-Do doesn't have a clear owner in the transcript, Claude asks rather than guesses.
+- **Never infer due dates.** Same rule — prompt for missing dates rather than defaulting to "next week."
+- **Preserve verbatim for IDS.** The Discuss sub-section should use close paraphrases from the transcript, not summaries. This matters for anyone who missed the meeting.
+- **Still save at the end.** The complete meeting file is written once — after Break 2 and the Conclude confirmation — not incrementally.
+
+---
+
 ## Output Format
 
 The meeting file follows the template structure in `templates/l10-meeting.md`:
