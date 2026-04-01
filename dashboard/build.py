@@ -3,11 +3,6 @@
 
 Reads data files from data/ and writes a self-contained HTML file to docs/index.html.
 Run locally or via GitHub Actions on every push.
-
-Configure via environment variables:
-  CEOS_COMPANY_NAME  — Company name shown in the dashboard (default: "My Company")
-  CEOS_GITHUB_REPO   — GitHub owner/repo for the Contents API (default: "my-org/ceos")
-  CEOS_PROCESS_NAME  — Name for your proven process (default: "Proven Process")
 """
 
 import base64
@@ -23,13 +18,6 @@ from datetime import datetime, timezone
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ROOT, "data")
 DOCS_DIR = os.path.join(ROOT, "docs")
-
-# ---------------------------------------------------------------------------
-# Configurable constants (override via environment variables)
-# ---------------------------------------------------------------------------
-COMPANY_NAME  = os.environ.get("CEOS_COMPANY_NAME", "My Company")
-GITHUB_REPO   = os.environ.get("CEOS_GITHUB_REPO", "my-org/ceos")
-PROCESS_NAME  = os.environ.get("CEOS_PROCESS_NAME", "Proven Process")
 
 
 # ---------------------------------------------------------------------------
@@ -96,11 +84,73 @@ def load_rocks(quarter="2026-Q1"):
     return rocks
 
 
+def _next_quarter(q):
+    """Given '2026-Q1', return '2026-Q2'. Wraps Q4 -> next year Q1."""
+    year, qn = q.split("-Q")
+    n = int(qn)
+    return f"{year}-Q{n+1}" if n < 4 else f"{int(year)+1}-Q1"
+
+
+def _prev_quarter(q):
+    """Given '2026-Q2', return '2026-Q1'. Wraps Q1 -> prev year Q4."""
+    year, qn = q.split("-Q")
+    n = int(qn)
+    return f"{year}-Q{n-1}" if n > 1 else f"{int(year)-1}-Q4"
+
+
+def load_all_rocks():
+    """Load rocks from all quarter directories.
+
+    Returns {quarters: [...], all_quarters: [...], rocks_by_quarter: {...}, current_quarter: "..."}.
+    quarters is limited to 6: 1 past + current + 4 future.
+    all_quarters is every quarter folder found on disk.
+    """
+    rocks_dir = os.path.join(DATA_DIR, "rocks")
+    all_quarters = []
+    if os.path.isdir(rocks_dir):
+        for name in sorted(os.listdir(rocks_dir)):
+            if re.match(r"\d{4}-Q[1-4]$", name) and os.path.isdir(os.path.join(rocks_dir, name)):
+                all_quarters.append(name)
+
+    # Determine current quarter from today's date
+    now = datetime.now()
+    q = (now.month - 1) // 3 + 1
+    current_quarter = f"{now.year}-Q{q}"
+
+    # If current quarter has no folder yet, still include it
+    if current_quarter not in all_quarters:
+        all_quarters.append(current_quarter)
+        all_quarters.sort()
+
+    # Build the visible window: 1 past + current + 4 future
+    prev_q = _prev_quarter(current_quarter)
+    future_qs = []
+    fq = current_quarter
+    for _ in range(4):
+        fq = _next_quarter(fq)
+        future_qs.append(fq)
+
+    window = [prev_q, current_quarter] + future_qs
+    # Only include quarters that exist on disk OR are in the window
+    quarters = sorted(set(all_quarters) | set(window))
+    # Now trim to just the window
+    quarters = [q for q in quarters if q in window]
+
+    rocks_by_quarter = {}
+    for qtr in quarters:
+        rocks_by_quarter[qtr] = load_rocks(qtr)
+
+    return {
+        "quarters": quarters,
+        "all_quarters": all_quarters,
+        "rocks_by_quarter": rocks_by_quarter,
+        "current_quarter": current_quarter,
+    }
+
+
 def load_scorecard():
     """Parse the metrics table from data/scorecard/metrics.md."""
     path = os.path.join(DATA_DIR, "scorecard", "metrics.md")
-    if not os.path.exists(path):
-        return []
     with open(path, encoding="utf-8") as f:
         text = f.read()
 
@@ -132,12 +182,10 @@ def load_scorecard():
 def load_accountability():
     """Parse seat sections from data/accountability.md."""
     path = os.path.join(DATA_DIR, "accountability.md")
-    if not os.path.exists(path):
-        return []
     with open(path, encoding="utf-8") as f:
         text = f.read()
 
-    SKIP_HEADINGS = {COMPANY_NAME, "How to Use This Chart"}
+    SKIP_HEADINGS = {"Your Company", "How to Use This Chart"}
     seats = []
 
     # Split on level-2 headings; result: [pre, h1, body1, h2, body2, ...]
@@ -279,8 +327,6 @@ def load_vision():
 def load_l10():
     """Parse the L10 standing agenda into structured sections."""
     path = os.path.join(DATA_DIR, "meetings", "l10", "agenda.md")
-    if not os.path.exists(path):
-        return {"schedule": "", "attendees": [], "sections": []}
     with open(path, encoding="utf-8") as f:
         text = f.read()
 
@@ -331,7 +377,11 @@ def load_team():
         "teal":   ("bg-teal-100",   "text-teal-800"),
         "cyan":   ("bg-cyan-100",   "text-cyan-800"),
     }
-    default_team = []
+    default_team = [
+        {"name": "Team Member 1", "color": "blue"},
+        {"name": "Team Member 2", "color": "purple"},
+        {"name": "Team Member 3", "color": "green"},
+    ]
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
@@ -390,7 +440,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>__COMPANY_NAME__ &middot; EOS Dashboard</title>
+  <title>Your Company &middot; EOS Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
@@ -399,7 +449,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <header class="bg-white border-b border-gray-200 shadow-sm">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
     <div>
-      <h1 class="text-xl font-bold text-gray-900">__COMPANY_NAME__</h1>
+      <h1 class="text-xl font-bold text-gray-900">Your Company</h1>
       <p class="text-sm text-gray-500">EOS Leadership Dashboard &middot; __QUARTER__</p>
     </div>
     <div class="flex items-center gap-3">
@@ -472,10 +522,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <script>
 /* ── Data ── */
 window.DASHBOARD_DATA = __DATA_JSON__;
-window.GITHUB_TOKEN  = '__GITHUB_TOKEN__';
-window.GITHUB_REPO   = '__GITHUB_REPO__';
-window.COMPANY_NAME  = '__COMPANY_NAME__';
-window.PROCESS_NAME  = '__PROCESS_NAME__';
+window.GITHUB_TOKEN = '__GITHUB_TOKEN__';
+window.GITHUB_REPO  = '__GITHUB_REPO__';
 
 /* ── Owner chip colors (literal strings so Tailwind CDN scans them) ── */
 /* bg-blue-100 text-blue-800 bg-purple-100 text-purple-800 bg-green-100 text-green-800 bg-orange-100 text-orange-800 bg-pink-100 text-pink-800 bg-red-100 text-red-800 bg-yellow-100 text-yellow-800 bg-indigo-100 text-indigo-800 bg-teal-100 text-teal-800 bg-cyan-100 text-cyan-800 */
@@ -524,6 +572,11 @@ function showTab(name) {
 
 /* ── Rocks ── */
 let ROCK_EDITING = null; // null = view all | 'new' = add form | integer = edit that index
+let ACTIVE_QUARTER = window.DASHBOARD_DATA.current_quarter;
+let CLOSE_QUARTER_MODE = false;  // false = normal | true = step-by-step scoring
+let CLOSE_QUARTER_STEP = 0;     // index into rocks being scored
+let CLOSE_QUARTER_SCORES = {};  // {rockIdx: 'complete'|'dropped'}
+let CLOSE_QUARTER_CARRY = {};   // {rockIdx: true|false} - carry forward dropped rocks
 
 let TEAM_MEMBERS = __TEAM_MEMBERS_JSON__;
 
@@ -718,10 +771,16 @@ async function toggleMilestone(ri, mi) {
 }
 
 function buildRockViewCard(rock, ri) {
-  const on    = rock.status === 'on_track';
-  const badge = on
-    ? `<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">On Track</span>`
-    : `<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Off Track</span>`;
+  const statusBadges = {
+    'on_track':  '<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">On Track</span>',
+    'off_track': '<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Off Track</span>',
+    'complete':  '<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">\u2713 Complete</span>',
+    'dropped':   '<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">\u2717 Dropped</span>',
+    'draft':     '<span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Draft</span>',
+  };
+  const badge = statusBadges[rock.status] || statusBadges['on_track'];
+  const isClosed = rock.status === 'complete' || rock.status === 'dropped';
+  const isDraft = rock.status === 'draft';
   const total = rock.milestones.length;
   const done  = rock.milestones.filter(m => m.done).length;
   const pct   = total ? Math.round(done / total * 100) : 0;
@@ -739,9 +798,9 @@ function buildRockViewCard(rock, ri) {
   });
   milestoneList += `</ul>`;
 
-  return `<div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+  return `<div class="bg-white rounded-lg ${isDraft ? 'border-2 border-dashed border-amber-300' : 'border border-gray-200'} shadow-sm p-4 ${isClosed ? 'opacity-50' : ''}">
     <div class="flex items-start justify-between gap-2 mb-1">
-      <h3 class="text-sm font-semibold text-gray-900 leading-snug">${esc(rock.title)}</h3>
+      <h3 class="text-sm font-semibold ${isDraft ? 'text-amber-800' : 'text-gray-900'} leading-snug ${isClosed ? 'line-through' : ''}">${esc(rock.title)}</h3>
       <div class="flex items-center gap-1 shrink-0">
         ${badge}
         <button onclick="ROCK_EDITING=${ri};renderRocks();"
@@ -749,6 +808,7 @@ function buildRockViewCard(rock, ri) {
           title="Edit rock">\u270E</button>
       </div>
     </div>
+    ${rock.outcome ? `<p class="text-xs text-gray-500 italic mb-2">${esc(rock.outcome)}</p>` : ''}
     <p class="text-xs text-gray-400 mb-3">Due ${esc(rock.due)}</p>
     <div class="flex justify-between text-xs text-gray-400 mb-1">
       <span>Milestones</span><span id="pc_${ri}">${done}/${total}</span>
@@ -811,8 +871,11 @@ function buildRockEditCard(rock, ri) {
         <label class="text-xs font-medium text-gray-500 block mb-1">Status</label>
         <select id="${pfx}_status"
           class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="draft"     ${status === 'draft'     ? 'selected' : ''}>Draft</option>
           <option value="on_track"  ${status === 'on_track'  ? 'selected' : ''}>On Track</option>
-          <option value="off_track" ${status !== 'on_track'  ? 'selected' : ''}>Off Track</option>
+          <option value="off_track" ${status === 'off_track' ? 'selected' : ''}>Off Track</option>
+          <option value="complete"  ${status === 'complete'  ? 'selected' : ''}>Complete</option>
+          <option value="dropped"   ${status === 'dropped'   ? 'selected' : ''}>Dropped</option>
         </select>
       </div>
     </div>
@@ -908,7 +971,8 @@ async function createRock() {
 
   const title   = document.getElementById('rock_new_title')?.value.trim()   || '';
   const owner   = document.getElementById('rock_new_owner')?.value          || '';
-  const status  = document.getElementById('rock_new_status')?.value         || 'on_track';
+  const defaultStatus = ACTIVE_QUARTER > window.DASHBOARD_DATA.current_quarter ? 'draft' : 'on_track';
+  const status  = document.getElementById('rock_new_status')?.value         || defaultStatus;
   const due     = document.getElementById('rock_new_due')?.value            || '';
   const outcome = document.getElementById('rock_new_outcome')?.value.trim() || '';
   const msLines = (document.getElementById('rock_new_milestones')?.value || '')
@@ -916,8 +980,8 @@ async function createRock() {
 
   if (!title) { alert('Title is required.'); return; }
 
-  const rocks   = window.DASHBOARD_DATA.rocks;
-  const quarter = rocks.length ? rocks[0].quarter : '2026-Q1';
+  const rocks   = getActiveRocks();
+  const quarter = ACTIVE_QUARTER;
   const today   = new Date().toISOString().split('T')[0];
 
   const maxNum  = rocks.reduce((max, r) => { const m = r.id.match(/(\d+)$/); return m ? Math.max(max, +m[1]) : max; }, 0);
@@ -978,18 +1042,651 @@ async function deleteRock(ri) {
   }
 }
 
-function renderRocks() {
-  const rocks = window.DASHBOARD_DATA.rocks;
+function getActiveRocks() {
+  return window.DASHBOARD_DATA.rocks_by_quarter[ACTIVE_QUARTER] || [];
+}
 
-  let html = `<div class="mb-4 flex justify-end">
-    <button onclick="ROCK_EDITING='new';renderRocks();"
-      class="bg-blue-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-blue-700 transition-colors">
-      + Add Rock
-    </button>
+function switchQuarter(q) {
+  ACTIVE_QUARTER = q;
+  ROCK_EDITING = null;
+  CLOSE_QUARTER_MODE = false;
+  window.DASHBOARD_DATA.rocks = getActiveRocks();
+  renderRocks();
+}
+
+function nextQuarter(q) {
+  const [y, qn] = q.split('-Q');
+  const n = parseInt(qn);
+  return n < 4 ? `${y}-Q${n+1}` : `${parseInt(y)+1}-Q1`;
+}
+
+function startCloseQuarter() {
+  CLOSE_QUARTER_MODE = true;
+  CLOSE_QUARTER_STEP = 0;
+  CLOSE_QUARTER_SCORES = {};
+  CLOSE_QUARTER_CARRY = {};
+  ROCK_EDITING = null;
+  renderRocks();
+}
+
+function scoreRock(idx, score) {
+  CLOSE_QUARTER_SCORES[idx] = score;
+  if (score === 'dropped') {
+    CLOSE_QUARTER_CARRY[idx] = true; // default carry forward for dropped
+  } else {
+    delete CLOSE_QUARTER_CARRY[idx];
+  }
+  renderRocks();
+}
+
+function toggleCarryForward(idx) {
+  CLOSE_QUARTER_CARRY[idx] = !CLOSE_QUARTER_CARRY[idx];
+  renderRocks();
+}
+
+function closeQuarterNext() {
+  const rocks = getActiveRocks();
+  if (CLOSE_QUARTER_STEP < rocks.length - 1) {
+    CLOSE_QUARTER_STEP++;
+    renderRocks();
+  }
+}
+
+function closeQuarterPrev() {
+  if (CLOSE_QUARTER_STEP > 0) {
+    CLOSE_QUARTER_STEP--;
+    renderRocks();
+  }
+}
+
+async function executeCloseQuarter() {
+  const rocks = getActiveRocks();
+  const token = window.GITHUB_TOKEN;
+  const repo  = window.GITHUB_REPO;
+  const nq    = nextQuarter(ACTIVE_QUARTER);
+
+  // Validate all rocks are scored
+  const unscored = rocks.filter((_, i) => !CLOSE_QUARTER_SCORES[i]);
+  if (unscored.length > 0) {
+    alert(`Please score all rocks before closing. ${unscored.length} rock(s) remaining.`);
+    return;
+  }
+
+  const btn = document.getElementById('close_q_execute_btn');
+  btn.disabled = true; btn.textContent = 'Closing quarter\u2026';
+
+  try {
+    // 1. Update each rock's status in the current quarter
+    for (let i = 0; i < rocks.length; i++) {
+      const rock = rocks[i];
+      const newStatus = CLOSE_QUARTER_SCORES[i];
+      if (rock.status === newStatus) continue;
+
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${rock.file}`,
+        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+      if (!res.ok) throw new Error(`Could not read ${rock.file}`);
+      const { sha } = await res.json();
+
+      const md = buildRockMarkdown(rock.title, rock.owner, rock.quarter, newStatus, rock.due, rock.created, rock.id, rock.outcome, rock.milestones);
+      const put = await fetch(`https://api.github.com/repos/${repo}/contents/${rock.file}`, {
+        method: 'PUT',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+                   Accept: 'application/vnd.github.v3+json' },
+        body: JSON.stringify({ message: `close quarter: ${rock.title} \u2192 ${newStatus}`, content: b64encode(md), sha })
+      });
+      if (!put.ok) throw new Error((await put.json()).message);
+      rock.status = newStatus;
+    }
+
+    // 2. Carry forward selected rocks to next quarter
+    const toCarry = rocks.filter((_, i) => CLOSE_QUARTER_CARRY[i]);
+    if (toCarry.length > 0) {
+      // Ensure next quarter exists in our data
+      if (!window.DASHBOARD_DATA.rocks_by_quarter[nq]) {
+        window.DASHBOARD_DATA.rocks_by_quarter[nq] = [];
+        if (!window.DASHBOARD_DATA.quarters.includes(nq)) {
+          window.DASHBOARD_DATA.quarters.push(nq);
+          window.DASHBOARD_DATA.quarters.sort();
+        }
+      }
+      const nqRocks = window.DASHBOARD_DATA.rocks_by_quarter[nq];
+
+      for (const rock of toCarry) {
+        const maxNum = nqRocks.reduce((max, r) => {
+          const m = r.id.match(/(\d+)$/);
+          return m ? Math.max(max, +m[1]) : max;
+        }, 0);
+        const newId = `rock-${String(maxNum + 1).padStart(3, '0')}`;
+        const slug = rock.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const filePath = `data/rocks/${nq}/${newId}-${slug}.md`;
+        const today = new Date().toISOString().split('T')[0];
+        const lastDay = nq.endsWith('Q1') ? `${nq.split('-')[0]}-03-31`
+                      : nq.endsWith('Q2') ? `${nq.split('-')[0]}-06-30`
+                      : nq.endsWith('Q3') ? `${nq.split('-')[0]}-09-30`
+                      : `${nq.split('-')[0]}-12-31`;
+        const newMilestones = rock.milestones.map(m => ({ done: false, text: m.text }));
+
+        const md = buildRockMarkdown(rock.title, rock.owner, nq, 'on_track', lastDay, today, newId, rock.outcome, newMilestones);
+        const put = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+          method: 'PUT',
+          headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+                     Accept: 'application/vnd.github.v3+json' },
+          body: JSON.stringify({ message: `carry forward: ${rock.title} \u2192 ${nq}`, content: b64encode(md) })
+        });
+        if (!put.ok) throw new Error((await put.json()).message);
+
+        nqRocks.push({
+          id: newId, title: rock.title, owner: rock.owner, quarter: nq,
+          status: 'on_track', created: today, due: lastDay,
+          outcome: rock.outcome, milestones: newMilestones, file: filePath
+        });
+      }
+    }
+
+    // 3. Check if next quarter has draft rocks to review
+    const nqDrafts = (window.DASHBOARD_DATA.rocks_by_quarter[nq] || []).filter(r => r.status === 'draft');
+
+    CLOSE_QUARTER_CLOSED_Q = ACTIVE_QUARTER;
+    CLOSE_QUARTER_CARRIED = toCarry.length;
+
+    if (nqDrafts.length > 0) {
+      // Transition to draft review wizard
+      CLOSE_QUARTER_MODE = false;
+      DRAFT_REVIEW_MODE = true;
+      DRAFT_REVIEW_QUARTER = nq;
+      DRAFT_REVIEW_STEP = 0;
+      DRAFT_REVIEW_DECISIONS = {}; // {idx: 'keep' | 'Q3' | 'Q4' | ...}
+      renderRocks();
+    } else {
+      // No drafts — go straight to plan step
+      CLOSE_QUARTER_MODE = false;
+      CLOSE_QUARTER_STEP = 0;
+      CLOSE_QUARTER_SHOW_PLAN = true;
+      renderRocks();
+    }
+  } catch(e) {
+    alert('Failed to close quarter: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Close Quarter';
+  }
+}
+
+let CLOSE_QUARTER_SHOW_PLAN = false;
+let CLOSE_QUARTER_CLOSED_Q = '';
+let CLOSE_QUARTER_CARRIED = 0;
+
+/* ── Draft Review Wizard ── */
+let DRAFT_REVIEW_MODE = false;
+let DRAFT_REVIEW_QUARTER = '';  // the quarter whose drafts we're reviewing
+let DRAFT_REVIEW_STEP = 0;
+let DRAFT_REVIEW_DECISIONS = {}; // {idx: 'keep' | 'YYYY-QN'}
+
+function draftReviewDecide(idx, decision) {
+  DRAFT_REVIEW_DECISIONS[idx] = decision;
+  renderRocks();
+}
+
+function draftReviewNext() {
+  const drafts = getDraftRocks();
+  if (DRAFT_REVIEW_STEP < drafts.length - 1) {
+    DRAFT_REVIEW_STEP++;
+    renderRocks();
+  }
+}
+
+function draftReviewPrev() {
+  if (DRAFT_REVIEW_STEP > 0) {
+    DRAFT_REVIEW_STEP--;
+    renderRocks();
+  }
+}
+
+function getDraftRocks() {
+  return (window.DASHBOARD_DATA.rocks_by_quarter[DRAFT_REVIEW_QUARTER] || [])
+    .map((r, i) => ({rock: r, idx: i}))
+    .filter(({rock}) => rock.status === 'draft');
+}
+
+function getFutureQuarterOptions() {
+  // Return quarters after the review quarter that are in the dropdown
+  const quarters = window.DASHBOARD_DATA.quarters;
+  return quarters.filter(q => q > DRAFT_REVIEW_QUARTER);
+}
+
+async function executeDraftReview() {
+  const token = window.GITHUB_TOKEN;
+  const repo  = window.GITHUB_REPO;
+  const allRocks = window.DASHBOARD_DATA.rocks_by_quarter[DRAFT_REVIEW_QUARTER] || [];
+  const drafts = getDraftRocks();
+
+  // Validate all drafts have decisions
+  const undecided = drafts.filter(({idx}) => !DRAFT_REVIEW_DECISIONS[idx]);
+  if (undecided.length > 0) {
+    alert(`Please decide on all draft rocks. ${undecided.length} remaining.`);
+    return;
+  }
+
+  const btn = document.getElementById('draft_review_execute_btn');
+  btn.disabled = true; btn.textContent = 'Applying\u2026';
+
+  try {
+    for (const {rock, idx} of drafts) {
+      const decision = DRAFT_REVIEW_DECISIONS[idx];
+
+      if (decision === 'keep') {
+        // Promote to on_track in current quarter
+        const res = await fetch(`https://api.github.com/repos/${repo}/contents/${rock.file}`,
+          { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+        if (!res.ok) throw new Error(`Could not read ${rock.file}`);
+        const { sha } = await res.json();
+
+        const md = buildRockMarkdown(rock.title, rock.owner, rock.quarter, 'on_track', rock.due, rock.created, rock.id, rock.outcome, rock.milestones);
+        const put = await fetch(`https://api.github.com/repos/${repo}/contents/${rock.file}`, {
+          method: 'PUT',
+          headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+                     Accept: 'application/vnd.github.v3+json' },
+          body: JSON.stringify({ message: `commit draft: ${rock.title} \u2192 on_track`, content: b64encode(md), sha })
+        });
+        if (!put.ok) throw new Error((await put.json()).message);
+        rock.status = 'on_track';
+
+      } else {
+        // Move to a future quarter: delete from current, create in target
+        const targetQ = decision;
+
+        // Delete from current quarter
+        const res = await fetch(`https://api.github.com/repos/${repo}/contents/${rock.file}`,
+          { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+        if (!res.ok) throw new Error(`Could not read ${rock.file}`);
+        const { sha } = await res.json();
+
+        const del = await fetch(`https://api.github.com/repos/${repo}/contents/${rock.file}`, {
+          method: 'DELETE',
+          headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+                     Accept: 'application/vnd.github.v3+json' },
+          body: JSON.stringify({ message: `push draft: ${rock.title} \u2192 ${targetQ}`, sha })
+        });
+        if (!del.ok) throw new Error((await del.json()).message);
+
+        // Ensure target quarter exists in data
+        if (!window.DASHBOARD_DATA.rocks_by_quarter[targetQ]) {
+          window.DASHBOARD_DATA.rocks_by_quarter[targetQ] = [];
+          if (!window.DASHBOARD_DATA.quarters.includes(targetQ)) {
+            window.DASHBOARD_DATA.quarters.push(targetQ);
+            window.DASHBOARD_DATA.quarters.sort();
+          }
+        }
+
+        // Create in target quarter
+        const tqRocks = window.DASHBOARD_DATA.rocks_by_quarter[targetQ];
+        const maxNum = tqRocks.reduce((max, r) => {
+          const m = r.id.match(/(\d+)$/);
+          return m ? Math.max(max, +m[1]) : max;
+        }, 0);
+        const newId = `rock-${String(maxNum + 1).padStart(3, '0')}`;
+        const slug = rock.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const filePath = `data/rocks/${targetQ}/${newId}-${slug}.md`;
+        const lastDay = targetQ.endsWith('Q1') ? `${targetQ.split('-')[0]}-03-31`
+                      : targetQ.endsWith('Q2') ? `${targetQ.split('-')[0]}-06-30`
+                      : targetQ.endsWith('Q3') ? `${targetQ.split('-')[0]}-09-30`
+                      : `${targetQ.split('-')[0]}-12-31`;
+
+        const md = buildRockMarkdown(rock.title, rock.owner, targetQ, 'draft', lastDay, rock.created, newId, rock.outcome, rock.milestones);
+
+        // Create .gitkeep first if needed
+        const keepPath = `data/rocks/${targetQ}/.gitkeep`;
+        const keepCheck = await fetch(`https://api.github.com/repos/${repo}/contents/${keepPath}`,
+          { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+        if (!keepCheck.ok) {
+          await fetch(`https://api.github.com/repos/${repo}/contents/${keepPath}`, {
+            method: 'PUT',
+            headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+                       Accept: 'application/vnd.github.v3+json' },
+            body: JSON.stringify({ message: `create ${targetQ} quarter`, content: b64encode('') })
+          });
+        }
+
+        const put = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+          method: 'PUT',
+          headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+                     Accept: 'application/vnd.github.v3+json' },
+          body: JSON.stringify({ message: `push draft: ${rock.title} \u2192 ${targetQ}`, content: b64encode(md) })
+        });
+        if (!put.ok) throw new Error((await put.json()).message);
+
+        tqRocks.push({
+          id: newId, title: rock.title, owner: rock.owner, quarter: targetQ,
+          status: 'draft', created: rock.created, due: lastDay,
+          outcome: rock.outcome, milestones: rock.milestones, file: filePath
+        });
+
+        // Remove from current quarter in-memory
+        const curIdx = allRocks.indexOf(rock);
+        if (curIdx >= 0) allRocks.splice(curIdx, 1);
+      }
+    }
+
+    // Done — show plan step
+    DRAFT_REVIEW_MODE = false;
+    CLOSE_QUARTER_SHOW_PLAN = true;
+    renderRocks();
+  } catch(e) {
+    alert('Failed to process drafts: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Apply Decisions';
+  }
+}
+
+function buildDraftReviewUI() {
+  const drafts = getDraftRocks();
+  const futureQs = getFutureQuarterOptions();
+  const {rock, idx} = drafts[DRAFT_REVIEW_STEP];
+  const total = drafts.length;
+  const decided = Object.keys(DRAFT_REVIEW_DECISIONS).length;
+  const decision = DRAFT_REVIEW_DECISIONS[idx];
+
+  let html = `<div class="mb-6 bg-white rounded-lg border-2 border-amber-300 shadow-sm p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <span class="text-xs font-semibold text-amber-600 uppercase tracking-widest">Review Drafts: ${DRAFT_REVIEW_QUARTER}</span>
+        <span class="text-xs text-gray-400 ml-2">${decided}/${total} decided</span>
+      </div>
+      <button onclick="DRAFT_REVIEW_MODE=false;CLOSE_QUARTER_SHOW_PLAN=true;renderRocks();"
+        class="text-gray-400 hover:text-gray-600 text-sm px-2 py-1 rounded hover:bg-gray-100">Skip All \u2192</button>
+    </div>
+
+    <div class="w-full bg-gray-100 rounded-full h-1.5 mb-5">
+      <div class="bg-amber-500 h-1.5 rounded-full transition-all" style="width:${Math.round(decided/total*100)}%"></div>
+    </div>
+
+    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-bold text-gray-900">${esc(rock.title)}</h3>
+        ${ownerChip(rock.owner)}
+      </div>
+      ${rock.outcome ? `<p class="text-xs text-gray-500 italic mb-3">${esc(rock.outcome)}</p>` : ''}
+
+      <p class="text-xs font-medium text-gray-600 mb-2">Commit to ${DRAFT_REVIEW_QUARTER} or push to a future quarter?</p>
+
+      <div class="flex flex-wrap gap-2">
+        <button onclick="draftReviewDecide(${idx},'keep')"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors ${decision === 'keep' ? 'bg-green-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-green-50'}">
+          \u2713 Commit to ${DRAFT_REVIEW_QUARTER}
+        </button>
+        ${futureQs.map(q => `
+        <button onclick="draftReviewDecide(${idx},'${q}')"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors ${decision === '${q}' ? 'bg-amber-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-amber-50'}">
+          \u2192 Push to ${q}
+        </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <button onclick="draftReviewPrev()" ${DRAFT_REVIEW_STEP === 0 ? 'disabled' : ''}
+        class="px-3 py-1.5 rounded-lg text-sm font-medium ${DRAFT_REVIEW_STEP === 0 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}">\u2190 Previous</button>
+      <span class="text-xs text-gray-400">${DRAFT_REVIEW_STEP + 1} of ${total}</span>
+      ${DRAFT_REVIEW_STEP < total - 1 ? `
+      <button onclick="draftReviewNext()"
+        class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Next \u2192</button>`
+      : `
+      <button onclick="executeDraftReview()" id="draft_review_execute_btn"
+        class="bg-amber-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-amber-700 transition-colors"
+        ${decided < total ? 'disabled title="Decide on all drafts first"' : ''}>
+        Apply Decisions
+      </button>`}
+    </div>
   </div>`;
+
+  // Summary list
+  html += `<div class="space-y-2">`;
+  drafts.forEach(({rock: r, idx: i}, step) => {
+    const d = DRAFT_REVIEW_DECISIONS[i];
+    const isCurrent = step === DRAFT_REVIEW_STEP;
+    html += `<div onclick="DRAFT_REVIEW_STEP=${step};renderRocks();"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${isCurrent ? 'bg-amber-50 border border-amber-200' : 'hover:bg-gray-50'}">
+      <span class="text-sm ${d === 'keep' ? 'text-green-600' : d ? 'text-amber-600' : 'text-gray-300'}">
+        ${d === 'keep' ? '\u2713' : d ? '\u2192' : '\u25CB'}
+      </span>
+      <span class="text-sm ${d ? 'text-gray-900' : 'text-gray-400'} flex-1">${esc(r.title)}</span>
+      ${ownerChip(r.owner)}
+      ${d && d !== 'keep' ? `<span class="text-xs text-amber-600">\u2192 ${d}</span>` : ''}
+      ${d === 'keep' ? `<span class="text-xs text-green-600">\u2713 ${DRAFT_REVIEW_QUARTER}</span>` : ''}
+    </div>`;
+  });
+  html += `</div>`;
+
+  return html;
+}
+
+async function stubOutQuarters() {
+  const token = window.GITHUB_TOKEN;
+  const repo  = window.GITHUB_REPO;
+  const btn   = document.getElementById('stub_q_btn');
+  btn.disabled = true; btn.textContent = 'Creating quarters\u2026';
+
+  try {
+    // Generate next 4 quarters from the one after the closed quarter
+    const nq = nextQuarter(CLOSE_QUARTER_CLOSED_Q);
+    let q = nq;
+    const toCreate = [];
+    for (let i = 0; i < 4; i++) {
+      toCreate.push(q);
+      q = nextQuarter(q);
+    }
+
+    for (const qtr of toCreate) {
+      if (window.DASHBOARD_DATA.rocks_by_quarter[qtr] && window.DASHBOARD_DATA.rocks_by_quarter[qtr].length > 0) {
+        continue; // already has rocks, skip
+      }
+
+      // Create a placeholder .gitkeep file to ensure the directory exists in git
+      const path = `data/rocks/${qtr}/.gitkeep`;
+      // Check if it already exists
+      const check = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`,
+        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+      if (check.ok) continue; // already exists
+
+      const put = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        method: 'PUT',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+                   Accept: 'application/vnd.github.v3+json' },
+        body: JSON.stringify({ message: `plan: create ${qtr} quarter`, content: b64encode('') })
+      });
+      if (!put.ok) throw new Error((await put.json()).message);
+
+      // Add to in-memory data
+      if (!window.DASHBOARD_DATA.rocks_by_quarter[qtr]) {
+        window.DASHBOARD_DATA.rocks_by_quarter[qtr] = [];
+      }
+      if (!window.DASHBOARD_DATA.quarters.includes(qtr)) {
+        window.DASHBOARD_DATA.quarters.push(qtr);
+        window.DASHBOARD_DATA.quarters.sort();
+      }
+    }
+
+    CLOSE_QUARTER_SHOW_PLAN = false;
+    switchQuarter(nextQuarter(CLOSE_QUARTER_CLOSED_Q));
+    alert(`Done! Created quarters: ${toCreate.join(', ')}. You can now draft rocks in any future quarter.`);
+  } catch(e) {
+    alert('Failed to create quarters: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Create Next 4 Quarters';
+  }
+}
+
+function skipPlanQuarters() {
+  CLOSE_QUARTER_SHOW_PLAN = false;
+  switchQuarter(nextQuarter(CLOSE_QUARTER_CLOSED_Q));
+}
+
+function buildCloseQuarterUI() {
+  const rocks = getActiveRocks();
+  const nq = nextQuarter(ACTIVE_QUARTER);
+  const rock = rocks[CLOSE_QUARTER_STEP];
+  const ri = CLOSE_QUARTER_STEP;
+  const total = rocks.length;
+  const scored = Object.keys(CLOSE_QUARTER_SCORES).length;
+
+  let html = `<div class="mb-6 bg-white rounded-lg border-2 border-orange-300 shadow-sm p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <span class="text-xs font-semibold text-orange-600 uppercase tracking-widest">Close Quarter: ${ACTIVE_QUARTER}</span>
+        <span class="text-xs text-gray-400 ml-2">${scored}/${total} scored</span>
+      </div>
+      <button onclick="CLOSE_QUARTER_MODE=false;renderRocks();"
+        class="text-gray-400 hover:text-gray-600 text-sm px-2 py-1 rounded hover:bg-gray-100">&times; Cancel</button>
+    </div>
+
+    <div class="w-full bg-gray-100 rounded-full h-1.5 mb-5">
+      <div class="bg-orange-500 h-1.5 rounded-full transition-all" style="width:${Math.round(scored/total*100)}%"></div>
+    </div>
+
+    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-bold text-gray-900">${esc(rock.title)}</h3>
+        ${ownerChip(rock.owner)}
+      </div>
+      ${rock.outcome ? `<p class="text-xs text-gray-500 italic mb-2">${esc(rock.outcome)}</p>` : ''}
+      <div class="text-xs text-gray-400 mb-3">Due ${esc(rock.due)} &middot; ${rock.milestones.filter(m=>m.done).length}/${rock.milestones.length} milestones</div>
+
+      <div class="flex gap-2 mb-3">
+        <button onclick="scoreRock(${ri},'complete')"
+          class="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${CLOSE_QUARTER_SCORES[ri] === 'complete' ? 'bg-green-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-green-50'}">
+          \u2713 Complete
+        </button>
+        <button onclick="scoreRock(${ri},'dropped')"
+          class="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${CLOSE_QUARTER_SCORES[ri] === 'dropped' ? 'bg-red-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-red-50'}">
+          \u2717 Dropped
+        </button>
+      </div>
+
+      ${CLOSE_QUARTER_SCORES[ri] === 'dropped' ? `
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+        <input type="checkbox" ${CLOSE_QUARTER_CARRY[ri] ? 'checked' : ''} onchange="toggleCarryForward(${ri})"
+          class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+        Carry forward to ${nq}
+      </label>` : ''}
+    </div>
+
+    <div class="flex items-center justify-between">
+      <button onclick="closeQuarterPrev()" ${ri === 0 ? 'disabled' : ''}
+        class="px-3 py-1.5 rounded-lg text-sm font-medium ${ri === 0 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-100'}">\u2190 Previous</button>
+      <span class="text-xs text-gray-400">${ri + 1} of ${total}</span>
+      ${ri < total - 1 ? `
+      <button onclick="closeQuarterNext()"
+        class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Next \u2192</button>`
+      : `
+      <button onclick="executeCloseQuarter()" id="close_q_execute_btn"
+        class="bg-orange-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-orange-700 transition-colors"
+        ${scored < total ? 'disabled title="Score all rocks first"' : ''}>
+        Close Quarter
+      </button>`}
+    </div>
+  </div>`;
+
+  // Show summary of scored rocks below
+  html += `<div class="space-y-2">`;
+  rocks.forEach((r, i) => {
+    const score = CLOSE_QUARTER_SCORES[i];
+    const carry = CLOSE_QUARTER_CARRY[i];
+    const isCurrent = i === CLOSE_QUARTER_STEP;
+    html += `<div onclick="CLOSE_QUARTER_STEP=${i};renderRocks();"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${isCurrent ? 'bg-orange-50 border border-orange-200' : 'hover:bg-gray-50'}">
+      <span class="text-sm ${score === 'complete' ? 'text-green-600' : score === 'dropped' ? 'text-red-600' : 'text-gray-300'}">
+        ${score === 'complete' ? '\u2713' : score === 'dropped' ? '\u2717' : '\u25CB'}
+      </span>
+      <span class="text-sm ${score ? 'text-gray-900' : 'text-gray-400'} flex-1">${esc(r.title)}</span>
+      ${ownerChip(r.owner)}
+      ${carry ? `<span class="text-xs text-blue-600">\u2192 ${nextQuarter(ACTIVE_QUARTER)}</span>` : ''}
+    </div>`;
+  });
+  html += `</div>`;
+
+  return html;
+}
+
+function renderRocks() {
+  const d = window.DASHBOARD_DATA;
+  const rocks = getActiveRocks();
+  d.rocks = rocks; // keep backward compat for L10 tab
+
+  const quarters = d.quarters;
+  const isCurrentQ = ACTIVE_QUARTER === d.current_quarter;
+
+  // Quarter chooser + action buttons
+  const qOpts = quarters.map(q =>
+    `<option value="${q}" ${q === ACTIVE_QUARTER ? 'selected' : ''}>${q}${q === d.current_quarter ? ' (current)' : ''}</option>`).join('');
+
+  let html = `<div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-2">
+      <label class="text-xs font-medium text-gray-500">Quarter:</label>
+      <select onchange="switchQuarter(this.value)"
+        class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+        ${qOpts}
+      </select>
+    </div>
+    <div class="flex gap-2">
+      ${!CLOSE_QUARTER_MODE && rocks.length > 0 && rocks.some(r => r.status !== 'complete' && r.status !== 'dropped') ? `
+      <button onclick="startCloseQuarter()"
+        class="bg-orange-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-orange-700 transition-colors">
+        Close Quarter
+      </button>` : ''}
+      <button onclick="ROCK_EDITING='new';renderRocks();"
+        class="bg-blue-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-blue-700 transition-colors">
+        + Add Rock
+      </button>
+    </div>
+  </div>`;
+
+  if (DRAFT_REVIEW_MODE) {
+    html += buildDraftReviewUI();
+    document.getElementById('panel-rocks').innerHTML = html;
+    return;
+  }
+
+  if (CLOSE_QUARTER_SHOW_PLAN) {
+    const nq = nextQuarter(CLOSE_QUARTER_CLOSED_Q);
+    const futureQs = [];
+    let fq = nq;
+    for (let i = 0; i < 4; i++) { futureQs.push(fq); fq = nextQuarter(fq); }
+
+    html += `<div class="mb-6 bg-white rounded-lg border-2 border-green-300 shadow-sm p-5">
+      <div class="text-xs font-semibold text-green-600 uppercase tracking-widest mb-2">\u2713 Quarter Closed: ${CLOSE_QUARTER_CLOSED_Q}</div>
+      <p class="text-sm text-gray-700 mb-4">${CLOSE_QUARTER_CARRIED} rock(s) carried forward to ${nq}.</p>
+
+      <div class="bg-gray-50 rounded-lg p-4 mb-4">
+        <h3 class="text-sm font-bold text-gray-900 mb-2">Plan your roadmap?</h3>
+        <p class="text-xs text-gray-500 mb-3">Stub out the next 4 quarters so you can start drafting rocks for your annual plan:</p>
+        <div class="flex flex-wrap gap-2 mb-4">
+          ${futureQs.map(q => `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">${q}</span>`).join('')}
+        </div>
+        <div class="flex gap-2">
+          <button onclick="stubOutQuarters()" id="stub_q_btn"
+            class="bg-blue-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-blue-700 transition-colors">
+            Create Next 4 Quarters
+          </button>
+          <button onclick="skipPlanQuarters()"
+            class="bg-white border border-gray-200 text-gray-600 rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-gray-50 transition-colors">
+            Skip
+          </button>
+        </div>
+      </div>
+    </div>`;
+    document.getElementById('panel-rocks').innerHTML = html;
+    return;
+  }
+
+  if (CLOSE_QUARTER_MODE) {
+    html += buildCloseQuarterUI();
+    document.getElementById('panel-rocks').innerHTML = html;
+    return;
+  }
 
   if (ROCK_EDITING === 'new') {
     html += `<div class="mb-6">${buildRockEditCard(null, 'new')}</div>`;
+  }
+
+  if (rocks.length === 0) {
+    html += `<p class="text-sm text-gray-500 mt-4">No rocks for ${ACTIVE_QUARTER}.</p>`;
+    document.getElementById('panel-rocks').innerHTML = html;
+    return;
   }
 
   const byOwner = {};
@@ -1171,7 +1868,7 @@ async function saveScorecard() {
   });
 
   // Build markdown
-  let md = `# Scorecard Metrics\n\n## ${window.COMPANY_NAME}\n\n`;
+  let md = `# Scorecard Metrics\n\n## Your Company\n\n`;
   md += `*The numbers that tell you the health of your business at a glance. Review weekly at L10.*\n\n---\n\n`;
   md += `## How to Use\n\nEach metric has an **owner**, a **goal**, and **green/red thresholds**. During the weekly L10, each owner reports their number. If it's green, move on. If it's red, drop it to the Issues List.\n\n---\n\n`;
   md += `## Metrics\n\n`;
@@ -1293,7 +1990,7 @@ function buildAccountabilityMarkdown() {
   const seats = window.DASHBOARD_DATA.accountability;
   const today = new Date().toISOString().split('T')[0];
 
-  let md = `# Accountability Chart\n\n## ${window.COMPANY_NAME}\n\n*Last updated: ${today}*\n\n---\n\n`;
+  let md = `# Accountability Chart\n\n## Your Company\n\n*Last updated: ${today}*\n\n---\n\n`;
   md += `## How to Use This Chart\n\nEvery seat has **one owner** and **five roles** (the key responsibilities for that seat). A person can own multiple seats, but every seat needs exactly one owner. If nobody owns it, it\u2019s a gap to fill.\n\n---\n\n`;
 
   seats.forEach((seat, si) => {
@@ -1380,7 +2077,7 @@ async function saveMeeting() {
   btn.disabled = true; btn.textContent = 'Saving\u2026';
   statusEl.className = 'text-sm hidden';
 
-  let md = `# ${window.COMPANY_NAME} \u2014 L10 Meeting Notes\n\n`;
+  let md = `# Your Company \u2014 L10 Meeting Notes\n\n`;
   md += `**Date:** ${date}\n**Attendees:** ${d.l10.attendees.join(', ')}\n\n---\n\n`;
 
   // 1. Segue
@@ -1762,7 +2459,7 @@ function buildSPView(v) {
     ${card('#f97316', '1-Year Plan (end of 2026)',    `<div class="space-y-1.5">${oypItems}</div>`)}
   </div>`;
 
-  /* Row 4: 3 Uniques + Proven Process */
+  /* Row 4: 3 Uniques + The Proven Process */
   const m = v.marketing || {};
   const uniquesItems = (m.uniques || []).map((u, i) =>
     `<div class="flex gap-3 text-sm">
@@ -1786,7 +2483,7 @@ function buildSPView(v) {
 
   html += `<div class="grid gap-4 sm:grid-cols-2">
     ${card('#0ea5e9', '3 Uniques',          uniquesBody)}
-    ${card('#14b8a6', '${window.PROCESS_NAME}', processBody)}
+    ${card('#14b8a6', 'The Proven Process', processBody)}
   </div>`;
 
   return html;
@@ -1880,7 +2577,7 @@ function buildSPEditForm(v) {
     ${card('#f97316', '1-Year Plan (end of 2026)',    oypEdit)}
   </div>`;
 
-  /* Row 4: 3 Uniques + Proven Process */
+  /* Row 4: 3 Uniques + Manifest Method */
   const uniquesEdit = `
     ${ta('sp_target_market', 'Target Market', m.target_market || '', 2)}
     ${(m.uniques || []).map((u, i) => `
@@ -1901,7 +2598,7 @@ function buildSPEditForm(v) {
 
   html += `<div class="grid gap-4 sm:grid-cols-2">
     ${card('#0ea5e9', '3 Uniques',          uniquesEdit)}
-    ${card('#14b8a6', '${window.PROCESS_NAME}', processEdit)}
+    ${card('#14b8a6', 'The Proven Process', processEdit)}
   </div>`;
 
   return html;
@@ -1915,7 +2612,7 @@ function buildVisionMarkdown() {
   const val = id => (document.getElementById(id)?.value || '').trim();
   const lines = id => val(id).split('\n').map(l => l.trim()).filter(Boolean);
 
-  let md = `# Vision/Traction Organizer\n\n## ${window.COMPANY_NAME}\n\n*Last updated: ${today}*\n\n---\n\n`;
+  let md = `# Vision/Traction Organizer\n\n## Your Company\n\n*Last updated: ${today}*\n\n---\n\n`;
 
   /* Core Values */
   md += `## Core Values\n\n*The guiding principles that define our culture. We hire, fire, and reward based on these.*\n\n`;
@@ -1943,7 +2640,7 @@ function buildVisionMarkdown() {
     const desc = val(`sp_unique_desc_${i}`);
     if (name) md += `${i + 1}. **${name}:** ${desc}\n`;
   });
-  md += `\n**Proven Process \u2014 ${window.PROCESS_NAME}:**\n`;
+  md += `\n**Proven Process \u2014 The Proven Process:**\n`;
   (m.process || []).forEach((_, i) => {
     const step = val(`sp_process_step_${i}`);
     const desc = val(`sp_process_desc_${i}`);
@@ -1952,7 +2649,7 @@ function buildVisionMarkdown() {
   md += `\n**Guarantee:**\n> ${val('sp_guarantee')}\n\n---\n\n`;
 
   /* 3-Year Picture */
-  md += `## 3-Year Picture\n\n*What does ${window.COMPANY_NAME} look like in 3 years?*\n\n`;
+  md += `## 3-Year Picture\n\n*What does Your Company look like by end of 2028?*\n\n`;
   md += `- **Revenue:** ${val('sp_3yr_revenue')}\n`;
   md += `- **Profit:** ${val('sp_3yr_profit')}\n`;
   md += `- **Head count:** ${val('sp_3yr_headcount')}\n`;
@@ -2181,7 +2878,7 @@ function buildCalendarMarkdown() {
   const events = window.DASHBOARD_DATA.calendar;
   events.sort((a, b) => a.date.localeCompare(b.date));
 
-  let md = `# Market Calendar\n\n## ${window.COMPANY_NAME}\n\n`;
+  let md = `# Market Calendar\n\n## Your Company\n\n`;
   md += `*Rolling 6-month view of partner events, market events, fundraising milestones, and team constraints.*\n\n---\n\n`;
   md += `## How to Use\n\nTrack external events that affect quarterly planning and Rocks. Review monthly or during quarterly planning. Events outside the rolling window (3 months back, 3 months forward) are retained but hidden from the dashboard view.\n\n---\n\n`;
   md += `## Events\n\n`;
@@ -2404,12 +3101,12 @@ LOGIN_TEMPLATE = r"""<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>__COMPANY_NAME__ &middot; EOS Dashboard</title>
+  <title>Your Company &middot; EOS Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center font-sans">
   <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 w-full max-w-sm mx-4">
-    <h1 class="text-lg font-bold text-gray-900 mb-1">__COMPANY_NAME__</h1>
+    <h1 class="text-lg font-bold text-gray-900 mb-1">Your Company</h1>
     <p class="text-sm text-gray-500 mb-6">EOS Leadership Dashboard</p>
     <input type="password" id="pw" placeholder="Password"
       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -2491,7 +3188,7 @@ def protect_with_password(html, password):
 def build():
     os.makedirs(DOCS_DIR, exist_ok=True)
 
-    rocks          = load_rocks()
+    all_rocks      = load_all_rocks()
     scorecard      = load_scorecard()
     accountability = load_accountability()
     l10            = load_l10()
@@ -2499,17 +3196,23 @@ def build():
     calendar       = load_calendar()
     team_names, team_owner_cls = load_team()
 
+    current_q = all_rocks["current_quarter"]
+    rocks = all_rocks["rocks_by_quarter"].get(current_q, [])
+
     data = {
-        "rocks":          rocks,
-        "scorecard":      scorecard,
-        "accountability": accountability,
-        "l10":            l10,
-        "vision":         vision,
-        "calendar":       calendar,
+        "rocks":            rocks,
+        "rocks_by_quarter": all_rocks["rocks_by_quarter"],
+        "quarters":         all_rocks["quarters"],
+        "current_quarter":  current_q,
+        "scorecard":        scorecard,
+        "accountability":   accountability,
+        "l10":              l10,
+        "vision":           vision,
+        "calendar":         calendar,
     }
 
     now     = datetime.now(timezone.utc)
-    quarter = rocks[0]["quarter"] if rocks else "2026-Q1"
+    quarter = current_q
     week    = now.isocalendar()[1]
     updated = now.strftime("%Y-%m-%d %H:%M UTC")
 
@@ -2519,11 +3222,9 @@ def build():
     html = html.replace("__UPDATED__",      updated)
     html = html.replace("__DATA_JSON__",    json.dumps(data, ensure_ascii=False))
     html = html.replace("__GITHUB_TOKEN__", os.environ.get("GITHUB_WRITE_TOKEN", ""))
-    html = html.replace("__GITHUB_REPO__",  GITHUB_REPO)
+    html = html.replace("__GITHUB_REPO__",  "owner/repo")
     html = html.replace("__TEAM_MEMBERS_JSON__", json.dumps(team_names))
     html = html.replace("__OWNER_CLS_JSON__",    json.dumps(team_owner_cls))
-    html = html.replace("__COMPANY_NAME__",        COMPANY_NAME)
-    html = html.replace("__PROCESS_NAME__",        PROCESS_NAME)
 
     password = os.environ.get("DASHBOARD_PASSWORD")
     if password:
@@ -2537,7 +3238,8 @@ def build():
         f.write(html)
 
     print(f"Built: {out}")
-    print(f"  Rocks:          {len(rocks)}")
+    total_rocks = sum(len(r) for r in all_rocks["rocks_by_quarter"].values())
+    print(f"  Rocks:          {total_rocks} across {len(all_rocks['quarters'])} quarter(s) (current: {current_q})")
     print(f"  Scorecard:      {len(scorecard)}")
     print(f"  Accountability: {len(accountability)}")
     print(f"  L10 sections:   {len(l10['sections'])}")

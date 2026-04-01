@@ -6,6 +6,7 @@ on:
     paths:
       - 'data/**'
       - 'dashboard/**'
+      - 'tests/**'
   workflow_dispatch:
 
 permissions:
@@ -30,7 +31,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install cryptography
+        run: pip install cryptography pytest
+
+      - name: Run tests
+        run: python -m pytest tests/test_build.py -v
 
       - name: Build dashboard
         env:
